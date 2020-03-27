@@ -1,4 +1,4 @@
-import { DrawerInterface, GameInterface } from './types';
+import { DrawerInterface, GameInterface, Sphere } from './types';
 import { Graphics } from './webgl/graphics';
 import { Shader } from './webgl/shader';
 import { Camera2D } from './webgl/camera2d';
@@ -40,14 +40,13 @@ export class Drawer implements DrawerInterface {
     this.shader.end();
   };
 
-  private drawSpheres = () => {
-    const { shader } = this;
-    const { spheres } = this.game;
+  private drawSphere = (sphere: Sphere) => {
+    this.shader.setColor(SPHERE_COLORS[sphere.colorIndex]);
+    this.shader.circle(sphere.x, sphere.y, sphere.r);
+  };
 
-    spheres.forEach(sphere => {
-      shader.setColor(SPHERE_COLORS[sphere.colorIndex]);
-      shader.circle(sphere.x, sphere.y, sphere.r);
-    });
+  private drawSpheres = () => {
+    this.game.spheres.forEach(this.drawSphere);
   };
 
   private drawArena = () => {

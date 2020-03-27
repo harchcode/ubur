@@ -1,11 +1,10 @@
-import { Sphere, GridInterface, PoolInterface } from './types';
+import { Sphere, GridInterface } from './types';
 import { WORLD_L, MAX_SPHERE_R } from './constants';
-
-const output: Sphere[] = [];
 
 export class Grid implements GridInterface {
   private l = 0;
   private cols = 0;
+  private cellCount = 0;
   private cellL = 0;
   private cells: Set<Sphere>[] = [];
 
@@ -13,8 +12,9 @@ export class Grid implements GridInterface {
     this.l = WORLD_L;
     this.cellL = MAX_SPHERE_R * 2;
     this.cols = this.l / this.cellL;
+    this.cellCount = this.cols * this.cols;
 
-    for (let i = 0; i < this.cols * this.cols; i++) {
+    for (let i = 0; i < this.cellCount; i++) {
       this.cells.push(new Set<Sphere>());
     }
   }
@@ -50,23 +50,35 @@ export class Grid implements GridInterface {
     }
   }
 
+  update(dt: number, updateFn: (dt: number, sphere: Sphere) => void) {
+    for (let i = 0; i < this.cellCount; i++) {
+      const cell = this.cells[i];
+
+      for (const sphere of cell) {
+        updateFn(dt, sphere);
+      }
+    }
+  }
+
+  forEach(fn: (sphere: Sphere) => void) {
+    for (let i = 0; i < this.cellCount; i++) {
+      const cell = this.cells[i];
+
+      for (const sphere of cell) {
+        fn(sphere);
+      }
+    }
+  }
+
   checkCollisions(
     checkerFunc: (s1: Sphere, s2: Sphere) => boolean,
     onCollisionFunc: (s1: Sphere, s2: Sphere) => void
   ) {
-    const totalCells = this.cols * this.cols;
     const last = this.cols - 1;
 
-    for (let i = 0; i < totalCells; i++) {
-      const spheres = this.cells[i];
-
-      for (const s1 of spheres) {
-        for (const s2 of spheres) {
-          if (s2.id <= s1.id) continue;
-
-          if (checkerFunc(s1, s2)) onCollisionFunc(s1, s2);
-        }
-      }
+    for (let i = 0; i < this.cellCount; i++) {
+      const cell = this.cells[i];
+      this.checkCollisionInCell(cell, checkerFunc, onCollisionFunc);
     }
 
     for (let row = 0; row < this.cols; row++) {
@@ -75,68 +87,75 @@ export class Grid implements GridInterface {
 
         if (col < last) {
           const cell2 = this.getCell(col + 1, row);
-
-          for (const s1 of cell1) {
-            for (const s2 of cell2) {
-              if (checkerFunc(s1, s2)) onCollisionFunc(s1, s2);
-            }
-          }
+          this.checkCollisionCrossCell(
+            cell1,
+            cell2,
+            checkerFunc,
+            onCollisionFunc
+          );
         }
 
         if (row < last) {
           const cell2 = this.getCell(col, row + 1);
-
-          for (const s1 of cell1) {
-            for (const s2 of cell2) {
-              if (checkerFunc(s1, s2)) onCollisionFunc(s1, s2);
-            }
-          }
+          this.checkCollisionCrossCell(
+            cell1,
+            cell2,
+            checkerFunc,
+            onCollisionFunc
+          );
         }
 
         if (col < last && row < last) {
           const cell2 = this.getCell(col + 1, row + 1);
-
-          for (const s1 of cell1) {
-            for (const s2 of cell2) {
-              if (checkerFunc(s1, s2)) onCollisionFunc(s1, s2);
-            }
-          }
+          this.checkCollisionCrossCell(
+            cell1,
+            cell2,
+            checkerFunc,
+            onCollisionFunc
+          );
         }
 
         if (col > 0 && row < last) {
           const cell2 = this.getCell(col - 1, row + 1);
-
-          for (const s1 of cell1) {
-            for (const s2 of cell2) {
-              if (checkerFunc(s1, s2)) onCollisionFunc(s1, s2);
-            }
-          }
+          this.checkCollisionCrossCell(
+            cell1,
+            cell2,
+            checkerFunc,
+            onCollisionFunc
+          );
         }
       }
     }
+  }
 
-    // for (const k in spheres.objs) {
-    //   if (!spheres.isAlive[k]) continue;
-    //   const s1 = spheres.objs[k];
-    //   const s2s = this.getCollisionCandidates(s1);
-    //   for (let i = 0; i < s2s.length; i++) {
-    //     const s2 = s2s[i];
-    //     if (s2.id <= s1.id) continue;
-    //     if (checkerFunc(s1, s2)) onCollisionFunc(s1, s2);
-    //   }
-    // }
+  private checkCollisionInCell(
+    cell: Set<Sphere>,
+    checkerFunc: (s1: Sphere, s2: Sphere) => boolean,
+    onCollisionFunc: (s1: Sphere, s2: Sphere) => void
+  ) {
+    for (const s1 of cell) {
+      for (const s2 of cell) {
+        if (s2.id <= s1.id) continue;
+
+        if (checkerFunc(s1, s2)) onCollisionFunc(s1, s2);
+      }
+    }
+  }
+
+  private checkCollisionCrossCell(
+    cell1: Set<Sphere>,
+    cell2: Set<Sphere>,
+    checkerFunc: (s1: Sphere, s2: Sphere) => boolean,
+    onCollisionFunc: (s1: Sphere, s2: Sphere) => void
+  ) {
+    for (const s1 of cell1) {
+      for (const s2 of cell2) {
+        if (checkerFunc(s1, s2)) onCollisionFunc(s1, s2);
+      }
+    }
   }
 
   private getCell(col: number, row: number) {
     return this.cells[row * this.cols + col];
-  }
-
-  private pushCellData(col: number, row: number, output: Sphere[]) {
-    const index = row * this.cols + col;
-    const cell = this.cells[index];
-
-    for (const s of cell) {
-      output.push(s);
-    }
   }
 }

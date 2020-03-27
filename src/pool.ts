@@ -53,4 +53,17 @@ export class Pool<T extends Poolable> implements PoolInterface<T> {
     this.isAlive[id] = false;
     this.availableIds.push(id);
   }
+
+  forEach(fn: (obj: T, i: number) => void) {
+    let i = 0;
+
+    for (const k in this.objs) {
+      const v = this.objs[k];
+
+      if (this.isAlive[v.id]) {
+        fn(v, i);
+        i++;
+      }
+    }
+  }
 }
