@@ -1,5 +1,7 @@
+const ONE_OVER_PI = 1 / Math.PI;
+
 export function circleRadiusFromArea(area: number) {
-  return Math.sqrt(area / Math.PI);
+  return Math.sqrt(area * ONE_OVER_PI);
 }
 
 export function circleAreaFromRadius(radius: number) {

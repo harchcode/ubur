@@ -1,6 +1,8 @@
 import { UpdaterInterface, GameInterface, Sphere } from './types';
-import { WORLD_L } from './constants';
-import { randInt } from './utils/math';
+import { WORLD_L, MAX_SPHERE_R } from './constants';
+import { circleAreaFromRadius, circleRadiusFromArea } from './utils/math';
+
+const ONE_OVER_PI = 1 / Math.PI;
 
 export class Updater implements UpdaterInterface {
   game: GameInterface;
@@ -23,9 +25,40 @@ export class Updater implements UpdaterInterface {
     return distanceSq <= rTotalSq;
   }
 
-  private onCollision(s1: Sphere, s2: Sphere) {
-    s1.colorIndex = randInt(0, 6);
-    s2.colorIndex = randInt(0, 6);
+  private onCollision = (sphere1: Sphere, sphere2: Sphere) => {
+    const distanceSq =
+      (sphere2.x - sphere1.x) * (sphere2.x - sphere1.x) +
+      (sphere2.y - sphere1.y) * (sphere2.y - sphere1.y);
+
+    this.absorb(sphere1, sphere2, distanceSq);
+  };
+
+  private absorb(sphere1: Sphere, sphere2: Sphere, distanceSq: number) {
+    const a1 = circleAreaFromRadius(sphere1.r);
+    const a2 = circleAreaFromRadius(sphere2.r);
+    const atot = a1 + a2;
+
+    const eater = sphere1.r > sphere2.r ? sphere1 : sphere2;
+    const eaten = eater === sphere1 ? sphere2 : sphere1;
+
+    if (distanceSq <= sphere1.r * sphere1.r + sphere2.r * sphere2.r) {
+      eater.r = circleRadiusFromArea(atot);
+      eaten.r = 0;
+
+      this.game.spheres.free(eaten);
+      this.game.grid.remove(eaten);
+
+      return;
+    }
+
+    const distance = Math.sqrt(distanceSq);
+
+    const r1 =
+      distance * 0.5 +
+      Math.sqrt(atot * 0.5 * ONE_OVER_PI - distance * distance * 0.25);
+
+    eater.r = Math.min(r1, MAX_SPHERE_R);
+    eaten.r = distance - eater.r;
   }
 
   private updateSphere = (dt: number, sphere: Sphere) => {

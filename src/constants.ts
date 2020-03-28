@@ -7,15 +7,18 @@ export const MAX_SPHERE_AREA = circleAreaFromRadius(MAX_SPHERE_R);
 export const MIN_SPHERE_R = 1;
 export const MIN_SPHERE_AREA = circleAreaFromRadius(MIN_SPHERE_R);
 export const STARTING_SPHERE_R = 5;
+export const MAX_SPHERE_V = 50;
 
 export const FPS = 60;
 export const MPF = 1000 / FPS;
 
-export const ARENA_COLOR = hex('#FFFFF0');
 export const BACK_COLOR = hex('#C05621');
-export const GRID_COLOR = hex('#B7791F');
-export const GRID_LINE_COUNT = 10;
-export const GRID_LINE_W = 1;
+export const ARENA_COLOR = hex('#FFFFF0');
+export const ARENA_GRID_COLOR = hex('#B7791F');
+export const ARENA_GRID_CELL_COUNT = 50;
+export const ARENA_GRID_CELL_L = WORLD_L / ARENA_GRID_CELL_COUNT;
+export const ARENA_GRID_LINE_W = 1;
+export const ARENA_GRID_LINE_COUNT = ARENA_GRID_CELL_COUNT - 1;
 
 export const SPHERE_COLORS = [
   hex('#EF5753'),
