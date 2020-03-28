@@ -11,8 +11,8 @@ import { randInt } from './utils/math';
 import {
   WORLD_L,
   SPHERE_COLORS,
-  MAX_SPHERE_R,
-  STARTING_SPHERE_R
+  STARTING_SPHERE_R,
+  MAX_SPHERE_V
 } from './constants';
 import { Grid } from './grid';
 
@@ -45,14 +45,14 @@ export class Game implements GameInterface {
   }
 
   start = (updater: UpdaterInterface, drawer?: DrawerInterface) => {
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 1000; i++) {
       const tmp = this.spheres.obtain();
 
       tmp.x = randInt(0, WORLD_L);
       tmp.y = randInt(0, WORLD_L);
-      tmp.r = randInt(STARTING_SPHERE_R, MAX_SPHERE_R);
-      tmp.vx = randInt(-100, 100);
-      tmp.vy = randInt(-100, 100);
+      tmp.r = tmp.id === 1 ? 10 : randInt(STARTING_SPHERE_R, 5);
+      tmp.vx = randInt(-MAX_SPHERE_V, MAX_SPHERE_V);
+      tmp.vy = randInt(-MAX_SPHERE_V, MAX_SPHERE_V);
       tmp.colorIndex = randInt(0, SPHERE_COLORS.length - 1);
 
       this.grid.insert(tmp);
