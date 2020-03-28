@@ -10,7 +10,8 @@ import {
   ARENA_GRID_COLOR,
   ARENA_GRID_LINE_W,
   ARENA_GRID_CELL_L,
-  ARENA_GRID_LINE_COUNT
+  ARENA_GRID_LINE_COUNT,
+  CAMERA_ZOOM_SPEED
 } from './constants';
 
 const OOAGCL = 1 / ARENA_GRID_CELL_L;
@@ -24,7 +25,7 @@ export class Drawer implements DrawerInterface {
   maxVH = 0;
   expanding = false;
   vl = 0;
-  currentVL = 250;
+  currentVL = 200;
 
   constructor(game: GameInterface, canvas: HTMLCanvasElement) {
     this.game = game;
@@ -38,19 +39,29 @@ export class Drawer implements DrawerInterface {
     this.camera.setPosition(this.playerSphere.x, this.playerSphere.y);
   }
 
+  update = (dt: number) => {
+    const { playerSphere } = this;
+
+    this.vl = (playerSphere.r + 50) * 2;
+
+    if (this.currentVL > this.vl) {
+      this.currentVL = Math.max(
+        this.currentVL - CAMERA_ZOOM_SPEED * dt,
+        this.vl
+      );
+    } else if (this.currentVL < this.vl) {
+      this.currentVL = Math.min(
+        this.currentVL + CAMERA_ZOOM_SPEED * dt,
+        this.vl
+      );
+    }
+  };
+
   draw = () => {
     const { playerSphere } = this;
     this.graphics.clear();
 
     this.camera.setPosition(playerSphere.x, playerSphere.y);
-
-    this.vl = (playerSphere.r + 50) * 2;
-
-    if (this.currentVL > this.vl) {
-      this.currentVL = Math.max(this.currentVL - 1, this.vl);
-    } else if (this.currentVL < this.vl) {
-      this.currentVL = Math.min(this.currentVL + 1, this.vl);
-    }
 
     const ratio = (this.currentVL * 2) / WORLD_L;
     const vw = ratio * this.maxVW;

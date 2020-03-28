@@ -32,6 +32,7 @@ export interface UpdaterInterface {
 }
 
 export interface DrawerInterface {
+  update: (dt: number) => void;
   draw: () => void;
   resize: (w: number, h: number) => void;
 }

@@ -20,6 +20,8 @@ export const ARENA_GRID_CELL_L = WORLD_L / ARENA_GRID_CELL_COUNT;
 export const ARENA_GRID_LINE_W = 1;
 export const ARENA_GRID_LINE_COUNT = ARENA_GRID_CELL_COUNT - 1;
 
+export const CAMERA_ZOOM_SPEED = 50;
+
 export const SPHERE_COLORS = [
   hex('#EF5753'),
   hex('#FAAD63'),
