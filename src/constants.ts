@@ -46,22 +46,6 @@ export const NAME_COLOR_STRS = [
   '#702459'
 ];
 
-export const NAME_CANVAS_L = 1280;
-
-export const NAME_SIZE_STRS = [
-  `${NAME_CANVAS_L / 80}px sans-serif`,
-  `${NAME_CANVAS_L / 60}px sans-serif`,
-  `${NAME_CANVAS_L / 40}px sans-serif`,
-  `${NAME_CANVAS_L / 30}px sans-serif`,
-  `${NAME_CANVAS_L / 20}px sans-serif`,
-  `bold ${NAME_CANVAS_L / 15}px sans-serif`,
-  `bold ${NAME_CANVAS_L / 12}px sans-serif`,
-  `bold ${NAME_CANVAS_L / 10}px sans-serif`
-];
-
-export const NAME_SIZE_R_LIMIT = NAME_CANVAS_L / 4;
-export const NAME_SIZE_STEP = NAME_SIZE_R_LIMIT / NAME_SIZE_STRS.length;
-
 export enum GameState {
   START = 1,
   CONNECTING = 2,

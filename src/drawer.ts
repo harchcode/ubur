@@ -12,29 +12,29 @@ import {
   ARENA_GRID_CELL_L,
   ARENA_GRID_LINE_COUNT,
   CAMERA_ZOOM_SPEED,
-  NAME_COLOR_STRS,
-  NAME_SIZE_STRS,
-  NAME_CANVAS_L,
-  NAME_SIZE_STEP,
-  NAME_SIZE_R_LIMIT
+  NAME_COLOR_STRS
 } from './constants';
 
 const OOAGCL = 1 / ARENA_GRID_CELL_L;
 export class Drawer implements DrawerInterface {
-  graphics: Graphics;
-  shader: Shader;
-  camera: Camera2D;
-  game: GameInterface;
-  maxVW = 0;
-  maxVH = 0;
-  expanding = false;
-  vl = 100;
-  currentVL = 100;
   playerSphere?: Sphere;
-  lastPlayerX = WORLD_L * 0.5;
-  lastPlayerY = WORLD_L * 0.5;
-  nameCtx: CanvasRenderingContext2D;
-  nameCanvas: HTMLCanvasElement;
+
+  private graphics: Graphics;
+  private shader: Shader;
+  private camera: Camera2D;
+  private game: GameInterface;
+  private maxVW = 0;
+  private maxVH = 0;
+  private expanding = false;
+  private vl = 100;
+  private currentVL = 100;
+  private lastPlayerX = WORLD_L * 0.5;
+  private lastPlayerY = WORLD_L * 0.5;
+  private nameCtx: CanvasRenderingContext2D;
+  private nameCanvas: HTMLCanvasElement;
+  private nameSizes: string[] = [];
+  private nameSizeRLimit = 0;
+  private nameSizeStep = 0;
 
   constructor(
     game: GameInterface,
@@ -109,14 +109,14 @@ export class Drawer implements DrawerInterface {
 
   private getNameSize = (r: number): string => {
     for (
-      let i = NAME_SIZE_STEP, j = 0;
-      i < NAME_SIZE_R_LIMIT;
-      i += NAME_SIZE_STEP, j++
+      let i = this.nameSizeStep, j = 0;
+      i < this.nameSizeRLimit;
+      i += this.nameSizeStep, j++
     ) {
-      if (r < i) return NAME_SIZE_STRS[j];
+      if (r < i) return this.nameSizes[j];
     }
 
-    return NAME_SIZE_STRS[NAME_SIZE_STRS.length - 1];
+    return this.nameSizes[this.nameSizes.length - 1];
   };
 
   private drawSphere = (sphere: Sphere) => {
@@ -208,8 +208,8 @@ export class Drawer implements DrawerInterface {
     this.maxVW = ratio >= 1 ? WORLD_L : ratio * WORLD_L;
     this.maxVH = ratio <= 1 ? WORLD_L : WORLD_L / ratio;
 
-    this.nameCanvas.width = ratio >= 1 ? NAME_CANVAS_L : ratio * NAME_CANVAS_L;
-    this.nameCanvas.height = ratio <= 1 ? NAME_CANVAS_L : NAME_CANVAS_L / ratio;
+    this.nameCanvas.width = w;
+    this.nameCanvas.height = h;
 
     this.initNameCtx();
 
@@ -221,6 +221,25 @@ export class Drawer implements DrawerInterface {
     this.nameCtx = this.nameCanvas.getContext('2d') as CanvasRenderingContext2D;
     this.nameCtx.textAlign = 'center';
     this.nameCtx.textBaseline = 'middle';
+
+    const nameCanvasL =
+      this.nameCanvas.width > this.nameCanvas.height
+        ? this.nameCanvas.width
+        : this.nameCanvas.height;
+
+    this.nameSizes = [
+      `${nameCanvasL / 80}px sans-serif`,
+      `${nameCanvasL / 60}px sans-serif`,
+      `${nameCanvasL / 40}px sans-serif`,
+      `${nameCanvasL / 30}px sans-serif`,
+      `${nameCanvasL / 20}px sans-serif`,
+      `bold ${nameCanvasL / 15}px sans-serif`,
+      `bold ${nameCanvasL / 12}px sans-serif`,
+      `bold ${nameCanvasL / 10}px sans-serif`
+    ];
+
+    this.nameSizeRLimit = nameCanvasL / 4;
+    this.nameSizeStep = this.nameSizeRLimit / this.nameSizes.length;
 
     return this.nameCtx;
   }
