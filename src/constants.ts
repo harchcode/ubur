@@ -17,22 +17,49 @@ export const ARENA_COLOR = hex('#FFFFF0');
 export const ARENA_GRID_COLOR = hex('#B7791F');
 export const ARENA_GRID_CELL_COUNT = 50;
 export const ARENA_GRID_CELL_L = WORLD_L / ARENA_GRID_CELL_COUNT;
-export const ARENA_GRID_LINE_W = 1;
+export const ARENA_GRID_LINE_W = 0.5;
 export const ARENA_GRID_LINE_COUNT = ARENA_GRID_CELL_COUNT - 1;
 
 export const CAMERA_ZOOM_SPEED = 50;
 
 export const SPHERE_COLORS = [
-  hex('#EF5753'),
-  hex('#FAAD63'),
-  hex('#FFF382'),
-  hex('#51D88A'),
-  hex('#64D5CA'),
-  hex('#6CB2EB'),
-  hex('#7886D7'),
-  hex('#A779E9'),
-  hex('#FA7EA8')
+  hex('#FEB2B2'), // red
+  hex('#FBD38D'), // orange
+  hex('#FAF089'), // yellow
+  hex('#9AE6B4'), // green
+  hex('#81E6D9'), // teal
+  hex('#90CDF4'), // blue
+  hex('#A3BFFA'), // indigo
+  hex('#D6BCFA'), // purple
+  hex('#FBB6CE') // pink
 ];
+
+export const NAME_COLOR_STRS = [
+  '#742A2A',
+  '#7B341E',
+  '#744210',
+  '#22543D',
+  '#234E52',
+  '#2A4365',
+  '#3C366B',
+  '#44337A',
+  '#702459'
+];
+
+export const NAME_SIZE_STRS = [
+  '9px sans-serif',
+  '12px sans-serif',
+  '16px sans-serif',
+  '24px sans-serif',
+  '32px sans-serif',
+  '48px sans-serif',
+  '64px sans-serif',
+  '96px sans-serif',
+  '128px sans-serif'
+];
+
+export const NAME_SIZE_MAX_RATIO = 0.7;
+export const NAME_SIZE_STEP = NAME_SIZE_MAX_RATIO / NAME_SIZE_STRS.length;
 
 export enum GameState {
   START = 1,

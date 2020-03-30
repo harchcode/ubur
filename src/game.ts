@@ -14,16 +14,17 @@ import {
   STARTING_SPHERE_R,
   MAX_SPHERE_V
 } from './constants';
-import { Grid } from './grid';
+import { World } from './world';
 
 export class Game implements GameInterface {
   spheres: PoolInterface<Sphere>;
-  grid: Grid;
+  world: World;
 
   constructor() {
     this.spheres = new Pool<Sphere>(
       () => ({
         id: 0,
+        name: 'Sphere',
         x: 0,
         y: 0,
         vx: 0,
@@ -41,7 +42,7 @@ export class Game implements GameInterface {
       }
     );
 
-    this.grid = new Grid();
+    this.world = new World();
   }
 
   start = (updater: UpdaterInterface, drawer?: DrawerInterface) => {
@@ -50,15 +51,31 @@ export class Game implements GameInterface {
 
       tmp.x = randInt(0, WORLD_L);
       tmp.y = randInt(0, WORLD_L);
-      tmp.r = tmp.id === 1 ? 10 : randInt(STARTING_SPHERE_R, 5);
+      tmp.r = 10;
       tmp.vx = randInt(-MAX_SPHERE_V, MAX_SPHERE_V);
       tmp.vy = randInt(-MAX_SPHERE_V, MAX_SPHERE_V);
       tmp.colorIndex = randInt(0, SPHERE_COLORS.length - 1);
 
-      this.grid.insert(tmp);
+      this.world.insert(tmp);
     }
 
     const loop = new GameLoop(updater, drawer);
     loop.start();
+  };
+
+  spawnPlayer = (name: string) => {
+    const newPlayerSphere = this.spheres.obtain();
+
+    newPlayerSphere.name = name || 'Anon';
+    newPlayerSphere.x = randInt(0, WORLD_L);
+    newPlayerSphere.y = randInt(0, WORLD_L);
+    newPlayerSphere.r = 100;
+    newPlayerSphere.vx = 50;
+    newPlayerSphere.vy = 80;
+    newPlayerSphere.colorIndex = randInt(0, SPHERE_COLORS.length - 1);
+
+    this.world.insert(newPlayerSphere);
+
+    return newPlayerSphere;
   };
 }

@@ -6,14 +6,16 @@ const ONE_OVER_PI = 1 / Math.PI;
 
 export class Updater implements UpdaterInterface {
   game: GameInterface;
+  onEaten?: (eaten: Sphere) => void;
 
-  constructor(game: GameInterface) {
+  constructor(game: GameInterface, onEaten?: (eaten: Sphere) => void) {
     this.game = game;
+    this.onEaten = onEaten;
   }
 
   update = (dt: number) => {
-    this.game.grid.update(dt, this.updateSphere);
-    this.game.grid.checkCollisions(this.isCollide, this.onCollision);
+    this.game.world.update(dt, this.updateSphere);
+    this.game.world.checkCollisions(this.isCollide, this.onCollision);
   };
 
   private isCollide(s1: Sphere, s2: Sphere) {
@@ -45,8 +47,9 @@ export class Updater implements UpdaterInterface {
       eater.r = circleRadiusFromArea(atot);
       eaten.r = 0;
 
+      this.onEaten?.(eaten);
       this.game.spheres.free(eaten);
-      this.game.grid.remove(eaten);
+      this.game.world.remove(eaten);
 
       return;
     }
@@ -97,6 +100,6 @@ export class Updater implements UpdaterInterface {
       sphere.vy *= -1;
     }
 
-    this.game.grid.move(sphere, oldX, oldY);
+    this.game.world.move(sphere, oldX, oldY);
   };
 }
