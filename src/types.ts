@@ -1,5 +1,6 @@
 export type Sphere = {
   id: number;
+  name: string;
   x: number;
   y: number;
   vx: number;
@@ -8,7 +9,7 @@ export type Sphere = {
   colorIndex: number;
 };
 
-export interface GridInterface {
+export interface WorldInterface {
   insert: (sphere: Sphere) => void;
   remove: (sphere: Sphere) => void;
   move: (sphere: Sphere, oldX: number, oldY: number) => void;
@@ -23,8 +24,9 @@ export interface GridInterface {
 
 export interface GameInterface {
   spheres: PoolInterface<Sphere>;
-  grid: GridInterface;
+  world: WorldInterface;
   start: (updater: UpdaterInterface, drawer: DrawerInterface) => void;
+  spawnPlayer: (name: string) => Sphere;
 }
 
 export interface UpdaterInterface {
@@ -32,8 +34,11 @@ export interface UpdaterInterface {
 }
 
 export interface DrawerInterface {
+  readonly playerSphere?: Sphere;
+  update: (dt: number) => void;
   draw: () => void;
   resize: (w: number, h: number) => void;
+  setPlayerSphere: (sphere?: Sphere) => void;
 }
 
 export interface Poolable {

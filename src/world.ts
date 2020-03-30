@@ -1,7 +1,7 @@
-import { Sphere, GridInterface } from './types';
+import { Sphere, WorldInterface } from './types';
 import { WORLD_L, MAX_SPHERE_R } from './constants';
 
-export class Grid implements GridInterface {
+export class World implements WorldInterface {
   private l = 0;
   private cols = 0;
   private cellCount = 0;

@@ -1,25 +1,117 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta name="viewport" content="width=device-width,initial-scale=1, maximum-scale=1.0, user-scalable=0"/>
-  <link rel="stylesheet" href="./index.css">
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="description" content="Ubur.io is an open source fake online game." />
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      font-size: 16px;
+    }
+
+    body, div, input, button {
+      box-sizing: border-box;
+    }
+
+    #game, #name {
+      width: 100%;
+      height: 100%;
+    }
+
+    #game-ui, #title-ui, #name {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+    }
+
+    #title-ui {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+    }
+
+    .box {
+      background: #fffc;
+      border: 2px solid #A0AEC0cc;
+      border-radius: 1em;
+      padding: 2em;
+      width: 100%;
+      max-width: 18em;
+      margin: 0 auto;
+    }
+
+    #name-input {
+      display: block;
+      text-align: center;
+      border: 0;
+      outline: 0;
+      padding: 0.5em;
+      width: 100%;
+      font-size: 1.5em;
+      color: #2D3748;
+      border-radius: 1em;
+      background: #EDF2F7;
+    }
+
+    #name-input:hover {
+      outline: 0;
+    }
+
+    #start-button {
+      display: block;
+      margin: 2em auto 0 auto;
+      cursor: pointer;
+      border: 0;
+      color: #2D3748;
+      font-size: 1.25em;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 0.5em 1em;
+      border-radius: 4px;
+      background-color: #EDF2F7;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    }
+
+    #start-button:focus {
+      outline: 0;
+    }
+
+    .visuallyhidden {
+      border: 0;
+      clip: rect(0 0 0 0);
+      height: 1px;
+      margin: -1px;
+      display: block;
+      overflow: hidden;
+      padding: 0;
+      position: absolute;
+      width: 1px;
+    }
+
+  </style>
   <title>Ubur.io</title>
 </head>
 <body>
   <canvas id="game" width="640" height="640"></canvas>
+  <canvas id="name" width="640" height="640"></canvas>
 
-  <!-- <div id="game-overlay">
+  <div id="game-ui">
   </div>
 
-  <div id="title-overlay">
+  <div id="title-ui">
     <div class="box">
-      <input id="name-input" class="name-input" type="text" placeholder="Type your name" maxlength="15" />
-      <button id="start-button" class="start-button" type="button">Play</button>
+      <label for="name-input" class="visuallyhidden">Enter your name</label>
+      <input id="name-input" type="text" placeholder="Enter" maxlength="15" />
+      <button id="start-button" type="button">Play</button>
     </div>
   </div>
-
-  <div id="gameover-overlay">
-  </div> -->
     
-  <script src="./index.ts"></script>
+  <script src="./index.ts" defer></script>
 </body>
 </html>

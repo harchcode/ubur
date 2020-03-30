@@ -10,8 +10,11 @@ export class Camera2D {
 
   private x = 0;
   private y = 0;
-  private w = 0;
-  private h = 0;
+  private w = 1;
+  private h = 1;
+
+  private screenW = 1;
+  private screenH = 1;
 
   private ppwX = 0;
   private ppwY = 0;
@@ -20,8 +23,17 @@ export class Camera2D {
 
   constructor(g: Graphics) {
     this.g = g;
+    this.screenW = g.screenWidth();
+    this.screenH = g.screenHeight();
 
     this.setPosition(0, 0);
+  }
+
+  setScreenSize(width: number, height: number) {
+    this.screenW = width;
+    this.screenH = height;
+
+    this.calcPPW();
   }
 
   setProjection = (width: number, height: number) => {
@@ -48,17 +60,20 @@ export class Camera2D {
 
   getWorldX = (screenX: number): number => this.x + screenX * this.wppX;
   getWorldY = (screenY: number): number => this.y + screenY * this.wppY;
-  getScreenX = (worldX: number): number => (worldX - this.x) * this.ppwX;
-  getScreenY = (worldY: number): number => (worldY - this.y) * this.ppwY;
+  getScreenX = (worldX: number): number =>
+    (worldX - this.x) * this.ppwX + this.screenW * 0.5;
+  getScreenY = (worldY: number): number =>
+    this.screenH * 0.5 - (worldY - this.y) * this.ppwY;
+  getOnScreenW = (w: number): number => this.ppwX * w;
 
   private calcVPMatrix = () => {
     mat4.multiply(this.vpMatrix, this.projectionMatrix, this.viewMatrix);
   };
 
   private calcPPW = () => {
-    this.ppwX = this.g.screenWidth() / this.w;
-    this.ppwY = this.g.screenHeight() / this.h;
-    this.wppX = this.w / this.g.screenWidth();
-    this.wppY = this.h / this.g.screenHeight();
+    this.ppwX = this.screenW / this.w;
+    this.ppwY = this.screenH / this.h;
+    this.wppX = this.w / this.screenW;
+    this.wppY = this.h / this.screenH;
   };
 }

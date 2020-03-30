@@ -33,6 +33,7 @@ export class GameLoop {
 
     while (this.counter > MPF) {
       this.updater.update(SPF);
+      this.drawer?.update(SPF);
 
       this.counter -= MPF;
     }
