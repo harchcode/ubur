@@ -14,8 +14,9 @@ import {
   CAMERA_ZOOM_SPEED,
   NAME_COLOR_STRS,
   NAME_SIZE_STRS,
+  NAME_CANVAS_L,
   NAME_SIZE_STEP,
-  NAME_SIZE_MAX_RATIO
+  NAME_SIZE_R_LIMIT
 } from './constants';
 
 const OOAGCL = 1 / ARENA_GRID_CELL_L;
@@ -107,19 +108,12 @@ export class Drawer implements DrawerInterface {
   };
 
   private getNameSize = (r: number): string => {
-    const l =
-      this.nameCanvas.width > this.nameCanvas.height
-        ? this.nameCanvas.width
-        : this.nameCanvas.height;
-
-    const ratio = (r * 2) / l;
-
     for (
       let i = NAME_SIZE_STEP, j = 0;
-      i < NAME_SIZE_MAX_RATIO;
+      i < NAME_SIZE_R_LIMIT;
       i += NAME_SIZE_STEP, j++
     ) {
-      if (ratio < i) return NAME_SIZE_STRS[j];
+      if (r < i) return NAME_SIZE_STRS[j];
     }
 
     return NAME_SIZE_STRS[NAME_SIZE_STRS.length - 1];
@@ -214,12 +208,12 @@ export class Drawer implements DrawerInterface {
     this.maxVW = ratio >= 1 ? WORLD_L : ratio * WORLD_L;
     this.maxVH = ratio <= 1 ? WORLD_L : WORLD_L / ratio;
 
-    this.nameCanvas.width = w;
-    this.nameCanvas.height = h;
+    this.nameCanvas.width = ratio >= 1 ? NAME_CANVAS_L : ratio * NAME_CANVAS_L;
+    this.nameCanvas.height = ratio <= 1 ? NAME_CANVAS_L : NAME_CANVAS_L / ratio;
 
     this.initNameCtx();
 
-    this.camera.setScreenSize(w, h);
+    this.camera.setScreenSize(this.nameCanvas.width, this.nameCanvas.height);
     this.camera.setProjection(this.maxVW, this.maxVH);
   };
 
