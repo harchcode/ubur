@@ -25,7 +25,6 @@ export class Drawer implements DrawerInterface {
   private game: GameInterface;
   private maxVW = 0;
   private maxVH = 0;
-  private expanding = false;
   private vl = 100;
   private currentVL = 100;
   private lastPlayerX = WORLD_L * 0.5;

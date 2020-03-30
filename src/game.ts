@@ -51,7 +51,7 @@ export class Game implements GameInterface {
 
       tmp.x = randInt(0, WORLD_L);
       tmp.y = randInt(0, WORLD_L);
-      tmp.r = 10;
+      tmp.r = 5;
       tmp.vx = randInt(-MAX_SPHERE_V, MAX_SPHERE_V);
       tmp.vy = randInt(-MAX_SPHERE_V, MAX_SPHERE_V);
       tmp.colorIndex = randInt(0, SPHERE_COLORS.length - 1);
@@ -69,7 +69,7 @@ export class Game implements GameInterface {
     newPlayerSphere.name = name || 'Anon';
     newPlayerSphere.x = randInt(0, WORLD_L);
     newPlayerSphere.y = randInt(0, WORLD_L);
-    newPlayerSphere.r = 100;
+    newPlayerSphere.r = 10;
     newPlayerSphere.vx = 50;
     newPlayerSphere.vy = 80;
     newPlayerSphere.colorIndex = randInt(0, SPHERE_COLORS.length - 1);
