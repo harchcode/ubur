@@ -1,6 +1,13 @@
+export enum SphereType {
+  PLAYER,
+  FOOD,
+  AM
+}
+
 export type Sphere = {
   id: number;
   name: string;
+  type: SphereType;
   x: number;
   y: number;
   vx: number;

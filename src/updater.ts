@@ -1,8 +1,5 @@
 import { UpdaterInterface, GameInterface, Sphere } from './types';
 import { WORLD_L, MAX_SPHERE_R } from './constants';
-import { circleAreaFromRadius, circleRadiusFromArea } from './utils/math';
-
-const ONE_OVER_PI = 1 / Math.PI;
 
 export class Updater implements UpdaterInterface {
   game: GameInterface;
@@ -36,15 +33,14 @@ export class Updater implements UpdaterInterface {
   };
 
   private absorb(sphere1: Sphere, sphere2: Sphere, distanceSq: number) {
-    const a1 = circleAreaFromRadius(sphere1.r);
-    const a2 = circleAreaFromRadius(sphere2.r);
-    const atot = a1 + a2;
-
     const eater = sphere1.r > sphere2.r ? sphere1 : sphere2;
     const eaten = eater === sphere1 ? sphere2 : sphere1;
 
     if (distanceSq <= sphere1.r * sphere1.r + sphere2.r * sphere2.r) {
-      eater.r = circleRadiusFromArea(atot);
+      eater.r = Math.min(
+        Math.sqrt(eater.r * eater.r + eaten.r * eaten.r),
+        MAX_SPHERE_R
+      );
       eaten.r = 0;
 
       this.onEaten?.(eaten);
@@ -58,10 +54,35 @@ export class Updater implements UpdaterInterface {
 
     const r1 =
       distance * 0.5 +
-      Math.sqrt(atot * 0.5 * ONE_OVER_PI - distance * distance * 0.25);
+      Math.sqrt(
+        0.5 * (eater.r * eater.r + eaten.r * eaten.r) - distanceSq * 0.25
+      );
 
     eater.r = Math.min(r1, MAX_SPHERE_R);
     eaten.r = distance - eater.r;
+  }
+
+  private melt(sphere1: Sphere, sphere2: Sphere, distanceSq: number) {
+    const bigger = sphere1.r > sphere2.r ? sphere1 : sphere2;
+    const smaller = bigger === sphere1 ? sphere2 : sphere1;
+
+    if (distanceSq <= sphere1.r * sphere1.r + sphere2.r * sphere2.r) {
+      bigger.r = Math.sqrt(bigger.r * bigger.r - smaller.r * smaller.r);
+      smaller.r = 0;
+
+      this.onEaten?.(smaller);
+      this.game.spheres.free(smaller);
+      this.game.world.remove(smaller);
+
+      return;
+    }
+
+    const distance = Math.sqrt(distanceSq);
+
+    bigger.r =
+      (bigger.r * bigger.r - smaller.r * smaller.r + distanceSq) /
+      (2 * distance);
+    smaller.r = distance - bigger.r;
   }
 
   private updateSphere = (dt: number, sphere: Sphere) => {
