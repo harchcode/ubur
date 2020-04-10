@@ -6,8 +6,9 @@ export const MAX_SPHERE_R = 100;
 export const MAX_SPHERE_AREA = circleAreaFromRadius(MAX_SPHERE_R);
 export const MIN_SPHERE_R = 1;
 export const MIN_SPHERE_AREA = circleAreaFromRadius(MIN_SPHERE_R);
-export const STARTING_SPHERE_R = 5;
-export const MAX_SPHERE_V = 50;
+export const STARTING_PLAYER_R = 5;
+export const STARTING_PLAYER_R_RANDOMNESS = 1;
+export const MAX_SPHERE_SPEED = 100;
 
 export const FPS = 60;
 export const MPF = 1000 / FPS;
@@ -22,7 +23,7 @@ export const ARENA_GRID_LINE_COUNT = ARENA_GRID_CELL_COUNT - 1;
 
 export const CAMERA_ZOOM_SPEED = 50;
 
-export const SPHERE_COLORS = [
+export const PLAYER_COLORS = [
   hex('#FEB2B2'), // red
   hex('#FBD38D'), // orange
   hex('#FAF089'), // yellow
@@ -34,7 +35,21 @@ export const SPHERE_COLORS = [
   hex('#FBB6CE') // pink
 ];
 
-export const NAME_COLOR_STRS = [
+export const FOOD_COLORS = [
+  hex('#E53E3E'), // red
+  hex('#DD6B20'), // orange
+  hex('#D69E2E'), // yellow
+  hex('#38A169'), // green
+  hex('#319795'), // teal
+  hex('#3182CE'), // blue
+  hex('#5A67D8'), // indigo
+  hex('#805AD5'), // purple
+  hex('#D53F8C') // pink
+];
+
+export const AM_COLOR = hex('#1A202C');
+
+export const PLAYER_NAME_COLORS = [
   '#742A2A',
   '#7B341E',
   '#744210',
@@ -46,10 +61,14 @@ export const NAME_COLOR_STRS = [
   '#702459'
 ];
 
-export enum GameState {
-  START = 1,
-  CONNECTING = 2,
-  WAITING_TO_START = 3,
-  PLAYING = 4,
-  GAME_OVER = 5
-}
+export const FOOD_SPAWN_R_MIN = 1;
+export const FOOD_SPAWN_R_MAX = 5;
+export const AM_SPAWN_R_MIN = 1;
+export const AM_SPAWN_R_MAX = 20;
+
+export const SHOOT_AREA_RATIO_SQ = 0.9;
+export const SHOOT_AREA_RATIO = Math.sqrt(SHOOT_AREA_RATIO_SQ);
+export const SHOOT_FORCE = 10;
+export const BULLET_SPEED = 50;
+
+export const SPHERE_R_CHANGE_SPEED = 10;

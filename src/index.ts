@@ -16,12 +16,25 @@ const nameCanvas = document.getElementById('name') as HTMLCanvasElement;
 const game = new Game();
 
 const drawer = new Drawer(game, canvas, nameCanvas);
-const updater = new Updater(game, (eaten: Sphere) => {
-  if (eaten === drawer.playerSphere) {
-    drawer.setPlayerSphere();
-    titleUI.style.display = 'flex';
-  }
-});
+
+const onClick = (ev: MouseEvent) => {
+  if (!drawer.playerSphere) return;
+
+  const sphereX = window.innerWidth * 0.5;
+  const sphereY = window.innerHeight * 0.5;
+
+  const mouseX = ev.clientX;
+  const mouseY = window.innerHeight - ev.clientY;
+
+  const relX = mouseX - sphereX;
+  const relY = mouseY - sphereY;
+  const len = Math.sqrt(relX * relX + relY * relY);
+
+  const dirX = relX / len;
+  const dirY = relY / len;
+
+  game.shoot(drawer.playerSphere, dirX, dirY);
+};
 
 const resizeWindow = () => {
   const w = window.innerWidth;
@@ -39,10 +52,25 @@ window.addEventListener('resize', () => {
 
 resizeWindow();
 
+const updater = new Updater(game, (eaten: Sphere) => {
+  if (eaten === drawer.playerSphere) {
+    drawer.setPlayerSphere();
+    titleUI.style.display = 'flex';
+
+    window.removeEventListener('mousedown', onClick);
+  }
+});
+
 game.start(updater, drawer);
 
 startButton.onclick = () => {
   titleUI.style.display = 'none';
   const player = game.spawnPlayer(nameInput.value);
+  player.r = 100;
+  player.cr = 100;
+  player.vx = 0;
+  player.vy = 0;
   drawer.setPlayerSphere(player);
+
+  window.addEventListener('mousedown', onClick);
 };

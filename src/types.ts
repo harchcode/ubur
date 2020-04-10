@@ -1,7 +1,8 @@
 export enum SphereType {
   PLAYER,
   FOOD,
-  AM
+  AM,
+  BULLET
 }
 
 export type Sphere = {
@@ -13,7 +14,15 @@ export type Sphere = {
   vx: number;
   vy: number;
   r: number;
+  cr: number;
   colorIndex: number;
+};
+
+export type ShootCommand = {
+  id: number;
+  shooter: Sphere | null;
+  dirx: number;
+  diry: number;
 };
 
 export interface WorldInterface {
@@ -31,9 +40,13 @@ export interface WorldInterface {
 
 export interface GameInterface {
   spheres: PoolInterface<Sphere>;
+  commands: PoolInterface<ShootCommand>;
   world: WorldInterface;
   start: (updater: UpdaterInterface, drawer: DrawerInterface) => void;
   spawnPlayer: (name: string) => Sphere;
+  spawnFood: () => Sphere;
+  spawnAM: () => Sphere;
+  shoot: (sphere: Sphere, dirx: number, diry: number) => void;
 }
 
 export interface UpdaterInterface {

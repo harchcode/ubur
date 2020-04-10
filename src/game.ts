@@ -4,21 +4,28 @@ import {
   GameInterface,
   Sphere,
   PoolInterface,
-  SphereType
+  SphereType,
+  ShootCommand
 } from './types';
 import { GameLoop } from './game-loop';
 import { Pool } from './pool';
-import { randInt } from './utils/math';
+import { randInt, rand } from './utils/math';
 import {
   WORLD_L,
-  SPHERE_COLORS,
-  STARTING_SPHERE_R,
-  MAX_SPHERE_V
+  PLAYER_COLORS,
+  FOOD_SPAWN_R_MIN,
+  FOOD_SPAWN_R_MAX,
+  FOOD_COLORS,
+  AM_SPAWN_R_MIN,
+  AM_SPAWN_R_MAX,
+  STARTING_PLAYER_R,
+  STARTING_PLAYER_R_RANDOMNESS
 } from './constants';
 import { World } from './world';
 
 export class Game implements GameInterface {
   spheres: PoolInterface<Sphere>;
+  commands: PoolInterface<ShootCommand>;
   world: World;
 
   constructor() {
@@ -32,6 +39,7 @@ export class Game implements GameInterface {
         vx: 0,
         vy: 0,
         r: 0,
+        cr: 0,
         colorIndex: 0
       }),
       (obj: Sphere) => {
@@ -40,7 +48,22 @@ export class Game implements GameInterface {
         obj.vx = 0;
         obj.vy = 0;
         obj.r = 0;
+        obj.cr = 0;
         obj.colorIndex = 0;
+      }
+    );
+
+    this.commands = new Pool<ShootCommand>(
+      () => ({
+        id: 0,
+        shooter: null,
+        dirx: 0,
+        diry: 0
+      }),
+      (obj: ShootCommand) => {
+        obj.shooter = null;
+        obj.dirx = 0;
+        obj.diry = 0;
       }
     );
 
@@ -48,36 +71,84 @@ export class Game implements GameInterface {
   }
 
   start = (updater: UpdaterInterface, drawer?: DrawerInterface) => {
-    for (let i = 0; i < 1000; i++) {
-      const tmp = this.spheres.obtain();
+    for (let i = 0; i < 10; i++) {
+      this.spawnAM();
+    }
 
-      tmp.x = randInt(0, WORLD_L);
-      tmp.y = randInt(0, WORLD_L);
-      tmp.r = 50;
-      tmp.vx = randInt(-MAX_SPHERE_V, MAX_SPHERE_V);
-      tmp.vy = randInt(-MAX_SPHERE_V, MAX_SPHERE_V);
-      tmp.colorIndex = randInt(0, SPHERE_COLORS.length - 1);
+    for (let i = 0; i < 500; i++) {
+      this.spawnFood();
+    }
 
-      this.world.insert(tmp);
+    for (let i = 0; i < 100; i++) {
+      this.spawnPlayer('Player');
     }
 
     const loop = new GameLoop(updater, drawer);
     loop.start();
   };
 
+  spawnFood = () => {
+    const newSphere = this.spheres.obtain();
+
+    newSphere.type = SphereType.FOOD;
+    newSphere.name = '';
+    newSphere.r = rand(FOOD_SPAWN_R_MIN, FOOD_SPAWN_R_MAX);
+    newSphere.cr = newSphere.r;
+    newSphere.x = rand(newSphere.r, WORLD_L - newSphere.r);
+    newSphere.y = rand(newSphere.r, WORLD_L - newSphere.r);
+    newSphere.vx = 0;
+    newSphere.vy = 0;
+    newSphere.colorIndex = randInt(0, FOOD_COLORS.length - 1);
+
+    this.world.insert(newSphere);
+
+    return newSphere;
+  };
+
+  spawnAM = () => {
+    const newSphere = this.spheres.obtain();
+
+    newSphere.type = SphereType.AM;
+    newSphere.name = '';
+    newSphere.r = rand(AM_SPAWN_R_MIN, AM_SPAWN_R_MAX);
+    newSphere.cr = newSphere.r;
+    newSphere.x = rand(newSphere.r, WORLD_L - newSphere.r);
+    newSphere.y = rand(newSphere.r, WORLD_L - newSphere.r);
+    newSphere.vx = 0;
+    newSphere.vy = 0;
+    newSphere.colorIndex = 0;
+
+    this.world.insert(newSphere);
+
+    return newSphere;
+  };
+
   spawnPlayer = (name: string) => {
-    const newPlayerSphere = this.spheres.obtain();
+    const newSphere = this.spheres.obtain();
 
-    newPlayerSphere.name = name || 'Anon';
-    newPlayerSphere.x = randInt(0, WORLD_L);
-    newPlayerSphere.y = randInt(0, WORLD_L);
-    newPlayerSphere.r = 100;
-    newPlayerSphere.vx = 50;
-    newPlayerSphere.vy = 80;
-    newPlayerSphere.colorIndex = randInt(0, SPHERE_COLORS.length - 1);
+    newSphere.type = SphereType.PLAYER;
+    newSphere.name = name || 'Anon';
+    newSphere.r = rand(
+      STARTING_PLAYER_R - STARTING_PLAYER_R_RANDOMNESS,
+      STARTING_PLAYER_R + STARTING_PLAYER_R_RANDOMNESS
+    );
+    newSphere.cr = newSphere.r;
+    newSphere.x = rand(newSphere.r, WORLD_L - newSphere.r);
+    newSphere.y = rand(newSphere.r, WORLD_L - newSphere.r);
+    newSphere.vx = 10;
+    newSphere.vy = 5;
+    newSphere.colorIndex = randInt(0, PLAYER_COLORS.length - 1);
 
-    this.world.insert(newPlayerSphere);
+    this.world.insert(newSphere);
 
-    return newPlayerSphere;
+    return newSphere;
+  };
+
+  shoot = (sphere: Sphere, dirx: number, diry: number) => {
+    const command = this.commands.obtain();
+
+    command.shooter = sphere;
+    command.dirx = dirx;
+    command.diry = diry;
   };
 }

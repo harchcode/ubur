@@ -1,18 +1,20 @@
-import { DrawerInterface, GameInterface, Sphere } from './types';
+import { DrawerInterface, GameInterface, Sphere, SphereType } from './types';
 import { Graphics } from './webgl/graphics';
 import { Shader } from './webgl/shader';
 import { Camera2D } from './webgl/camera2d';
 import {
   BACK_COLOR,
   WORLD_L,
-  SPHERE_COLORS,
+  PLAYER_COLORS,
   ARENA_COLOR,
   ARENA_GRID_COLOR,
   ARENA_GRID_LINE_W,
   ARENA_GRID_CELL_L,
   ARENA_GRID_LINE_COUNT,
   CAMERA_ZOOM_SPEED,
-  NAME_COLOR_STRS
+  PLAYER_NAME_COLORS,
+  AM_COLOR,
+  FOOD_COLORS
 } from './constants';
 
 const OOAGCL = 1 / ARENA_GRID_CELL_L;
@@ -133,14 +135,34 @@ export class Drawer implements DrawerInterface {
     )
       return;
 
-    this.shader.setColor(SPHERE_COLORS[sphere.colorIndex]);
-    this.shader.circle(sphere.x, sphere.y, sphere.r);
+    if (sphere.type === SphereType.PLAYER) {
+      this.drawPlayer(sphere);
+    } else if (sphere.type === SphereType.AM) {
+      this.drawAM(sphere);
+    } else if (sphere.type === SphereType.FOOD) {
+      this.drawFood(sphere);
+    }
+  };
+
+  private drawFood = (sphere: Sphere) => {
+    this.shader.setColor(FOOD_COLORS[sphere.colorIndex]);
+    this.shader.circle(sphere.x, sphere.y, sphere.cr);
+  };
+
+  private drawAM = (sphere: Sphere) => {
+    this.shader.setColor(AM_COLOR);
+    this.shader.circle(sphere.x, sphere.y, sphere.cr);
+  };
+
+  private drawPlayer = (sphere: Sphere) => {
+    this.shader.setColor(PLAYER_COLORS[sphere.colorIndex]);
+    this.shader.circle(sphere.x, sphere.y, sphere.cr);
 
     const screenR = this.camera.getOnScreenW(sphere.r);
 
     const nameSize = this.getNameSize(screenR);
 
-    this.nameCtx.fillStyle = NAME_COLOR_STRS[sphere.colorIndex];
+    this.nameCtx.fillStyle = PLAYER_NAME_COLORS[sphere.colorIndex];
     this.nameCtx.font = nameSize;
     this.nameCtx.fillText(
       sphere.name,

@@ -1,5 +1,18 @@
-import { UpdaterInterface, GameInterface, Sphere } from './types';
-import { WORLD_L, MAX_SPHERE_R } from './constants';
+import {
+  UpdaterInterface,
+  GameInterface,
+  Sphere,
+  SphereType,
+  ShootCommand
+} from './types';
+import {
+  WORLD_L,
+  MAX_SPHERE_R,
+  SHOOT_FORCE,
+  MAX_SPHERE_SPEED,
+  SHOOT_AREA_RATIO,
+  SPHERE_R_CHANGE_SPEED
+} from './constants';
 
 export class Updater implements UpdaterInterface {
   game: GameInterface;
@@ -11,8 +24,32 @@ export class Updater implements UpdaterInterface {
   }
 
   update = (dt: number) => {
+    this.game.commands.forEach(this.handleCommand);
+
     this.game.world.update(dt, this.updateSphere);
     this.game.world.checkCollisions(this.isCollide, this.onCollision);
+  };
+
+  private handleCommand = (command: ShootCommand) => {
+    const { shooter } = command;
+
+    if (!shooter) return;
+
+    shooter.vx -= command.dirx * SHOOT_FORCE;
+    shooter.vy -= command.diry * SHOOT_FORCE;
+
+    const speedSq = shooter.vx * shooter.vx + shooter.vy * shooter.vy;
+
+    if (speedSq > MAX_SPHERE_SPEED * MAX_SPHERE_SPEED) {
+      const speed = Math.sqrt(speedSq);
+
+      shooter.vx = (shooter.vx / speed) * MAX_SPHERE_SPEED;
+      shooter.vy = (shooter.vy / speed) * MAX_SPHERE_SPEED;
+    }
+
+    shooter.r *= SHOOT_AREA_RATIO;
+
+    this.game.commands.free(command);
   };
 
   private isCollide(s1: Sphere, s2: Sphere) {
@@ -29,14 +66,23 @@ export class Updater implements UpdaterInterface {
       (sphere2.x - sphere1.x) * (sphere2.x - sphere1.x) +
       (sphere2.y - sphere1.y) * (sphere2.y - sphere1.y);
 
-    this.absorb(sphere1, sphere2, distanceSq);
+    const bigger = sphere1.r > sphere2.r ? sphere1 : sphere2;
+    const smaller = bigger === sphere1 ? sphere2 : sphere1;
+
+    if (sphere1.type === SphereType.AM || sphere2.type === SphereType.AM) {
+      this.melt(bigger, smaller, distanceSq);
+    } else if (
+      bigger.type === SphereType.FOOD &&
+      smaller.type !== SphereType.FOOD
+    ) {
+      this.absorb(smaller, bigger, distanceSq);
+    } else {
+      this.absorb(bigger, smaller, distanceSq);
+    }
   };
 
-  private absorb(sphere1: Sphere, sphere2: Sphere, distanceSq: number) {
-    const eater = sphere1.r > sphere2.r ? sphere1 : sphere2;
-    const eaten = eater === sphere1 ? sphere2 : sphere1;
-
-    if (distanceSq <= sphere1.r * sphere1.r + sphere2.r * sphere2.r) {
+  private absorb(eater: Sphere, eaten: Sphere, distanceSq: number) {
+    if (distanceSq <= eater.r * eater.r + eaten.r * eaten.r) {
       eater.r = Math.min(
         Math.sqrt(eater.r * eater.r + eaten.r * eaten.r),
         MAX_SPHERE_R
@@ -62,11 +108,8 @@ export class Updater implements UpdaterInterface {
     eaten.r = distance - eater.r;
   }
 
-  private melt(sphere1: Sphere, sphere2: Sphere, distanceSq: number) {
-    const bigger = sphere1.r > sphere2.r ? sphere1 : sphere2;
-    const smaller = bigger === sphere1 ? sphere2 : sphere1;
-
-    if (distanceSq <= sphere1.r * sphere1.r + sphere2.r * sphere2.r) {
+  private melt(bigger: Sphere, smaller: Sphere, distanceSq: number) {
+    if (distanceSq <= bigger.r * bigger.r + smaller.r * smaller.r) {
       bigger.r = Math.sqrt(bigger.r * bigger.r - smaller.r * smaller.r);
       smaller.r = 0;
 
@@ -88,6 +131,12 @@ export class Updater implements UpdaterInterface {
   private updateSphere = (dt: number, sphere: Sphere) => {
     const oldX = sphere.x;
     const oldY = sphere.y;
+
+    if (sphere.cr > sphere.r) {
+      sphere.cr = Math.max(sphere.r, sphere.cr - SPHERE_R_CHANGE_SPEED * dt);
+    } else if (sphere.cr < sphere.r) {
+      sphere.cr = Math.min(sphere.r, sphere.cr + SPHERE_R_CHANGE_SPEED * dt);
+    }
 
     sphere.x += sphere.vx * dt;
     sphere.y += sphere.vy * dt;
