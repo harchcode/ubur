@@ -14,7 +14,6 @@ export type Sphere = {
   vx: number;
   vy: number;
   r: number;
-  cr: number;
   colorIndex: number;
 };
 

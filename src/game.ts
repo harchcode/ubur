@@ -39,7 +39,6 @@ export class Game implements GameInterface {
         vx: 0,
         vy: 0,
         r: 0,
-        cr: 0,
         colorIndex: 0
       }),
       (obj: Sphere) => {
@@ -48,7 +47,6 @@ export class Game implements GameInterface {
         obj.vx = 0;
         obj.vy = 0;
         obj.r = 0;
-        obj.cr = 0;
         obj.colorIndex = 0;
       }
     );
@@ -93,7 +91,6 @@ export class Game implements GameInterface {
     newSphere.type = SphereType.FOOD;
     newSphere.name = '';
     newSphere.r = rand(FOOD_SPAWN_R_MIN, FOOD_SPAWN_R_MAX);
-    newSphere.cr = newSphere.r;
     newSphere.x = rand(newSphere.r, WORLD_L - newSphere.r);
     newSphere.y = rand(newSphere.r, WORLD_L - newSphere.r);
     newSphere.vx = 0;
@@ -111,7 +108,6 @@ export class Game implements GameInterface {
     newSphere.type = SphereType.AM;
     newSphere.name = '';
     newSphere.r = rand(AM_SPAWN_R_MIN, AM_SPAWN_R_MAX);
-    newSphere.cr = newSphere.r;
     newSphere.x = rand(newSphere.r, WORLD_L - newSphere.r);
     newSphere.y = rand(newSphere.r, WORLD_L - newSphere.r);
     newSphere.vx = 0;
@@ -132,7 +128,6 @@ export class Game implements GameInterface {
       STARTING_PLAYER_R - STARTING_PLAYER_R_RANDOMNESS,
       STARTING_PLAYER_R + STARTING_PLAYER_R_RANDOMNESS
     );
-    newSphere.cr = newSphere.r;
     newSphere.x = rand(newSphere.r, WORLD_L - newSphere.r);
     newSphere.y = rand(newSphere.r, WORLD_L - newSphere.r);
     newSphere.vx = 10;

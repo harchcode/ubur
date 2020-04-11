@@ -11,7 +11,7 @@ import {
   SHOOT_FORCE,
   MAX_SPHERE_SPEED,
   SHOOT_AREA_RATIO,
-  SPHERE_R_CHANGE_SPEED
+  R_DECREASE_RATIO
 } from './constants';
 
 export class Updater implements UpdaterInterface {
@@ -132,11 +132,7 @@ export class Updater implements UpdaterInterface {
     const oldX = sphere.x;
     const oldY = sphere.y;
 
-    if (sphere.cr > sphere.r) {
-      sphere.cr = Math.max(sphere.r, sphere.cr - SPHERE_R_CHANGE_SPEED * dt);
-    } else if (sphere.cr < sphere.r) {
-      sphere.cr = Math.min(sphere.r, sphere.cr + SPHERE_R_CHANGE_SPEED * dt);
-    }
+    sphere.r -= R_DECREASE_RATIO * sphere.r * dt;
 
     sphere.x += sphere.vx * dt;
     sphere.y += sphere.vy * dt;

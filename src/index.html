@@ -6,6 +6,7 @@
   <style>
     body {
       font-family: sans-serif;
+      color: #1A202C;
       margin: 0;
       padding: 0;
       overflow: hidden;
@@ -38,10 +39,8 @@
     .box {
       background: #fffc;
       border: 2px solid #A0AEC0cc;
-      border-radius: 1em;
-      padding: 2em;
-      width: 100%;
-      max-width: 18em;
+      border-radius: 1rem;
+      padding: 2rem;
       margin: 0 auto;
     }
 
@@ -50,11 +49,11 @@
       text-align: center;
       border: 0;
       outline: 0;
-      padding: 0.5em;
+      padding: 0.5rem;
       width: 100%;
-      font-size: 1.5em;
+      font-size: 1.5rem;
       color: #2D3748;
-      border-radius: 1em;
+      border-radius: 1rem;
       background: #EDF2F7;
     }
 
@@ -64,15 +63,15 @@
 
     #start-button {
       display: block;
-      margin: 2em auto 0 auto;
+      margin: 2rem auto 0 auto;
       cursor: pointer;
       border: 0;
       color: #2D3748;
-      font-size: 1.25em;
+      font-size: 1.25rem;
       font-weight: bold;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
-      padding: 0.5em 1em;
+      letter-spacing: 0.1rem;
+      padding: 0.5rem 1rem;
       border-radius: 4px;
       background-color: #EDF2F7;
       box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
@@ -102,10 +101,48 @@
   <canvas id="name" width="640" height="640"></canvas>
 
   <div id="game-ui">
+    <div style="flex: 1 1 auto; padding: 1rem; margin: 1rem">
+      <div style="font-size: 1.5rem; font-weight: bold; color: #2D3748;">Score: 32000</div>
+      <div style="color:#38A169;font-size: 0.8rem;font-weight: bold;margin-top: 0.25rem;">10ms</div>
+    </div>
+    <div class="box" style="padding: 1rem; margin: 1rem; width: 18rem;">
+      <ul style="list-style: none; margin: 0; padding: 0;">
+        <li style="display: flex; padding: 0.25rem 0.5rem; font-weight: bold; color: #C53030; font-size: 1.2rem; text-shadow: 0 0 2px #FEB2B2;">
+          <div style="width: 2rem;">1.</div>
+          <div style="margin-left: 1rem; width: 8rem; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">Juara 1 sfklsfsf skfsm</div>
+          <div style="margin-left: 1rem; text-align: right;">30000</div>
+        </li>
+        <li style="display: flex; padding: 0.25rem 0.5rem; font-weight: bold; color: #2B6CB0; font-size: 1.1rem; text-shadow: 0 0 2px #90CDF4;">
+          <div style="width: 2rem;">2.</div>
+          <div style="margin-left: 1rem; width: 8rem; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">Juara 1</div>
+          <div style="margin-left: 1rem; width: 3rem; text-align: right;">30000</div>
+        </li>
+        <li style="display: flex; padding: 0.25rem 0.5rem; font-weight: bold; color: #B7791F; text-shadow: 0 0 2px #FAF089;">
+          <div style="width: 2rem;">3.</div>
+          <div style="margin-left: 1rem; width: 8rem; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">Juara 1</div>
+          <div style="margin-left: 1rem; width: 3rem; text-align: right;">30000</div>
+        </li>
+        <li style="display: flex; padding: 0.25rem 0.5rem;">
+          <div style="width: 2rem;">4.</div>
+          <div style="margin-left: 1rem; width: 8rem; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">Juara 1</div>
+          <div style="margin-left: 1rem; width: 3rem; text-align: right;">30000</div>
+        </li>
+        <li style="display: flex; padding: 0.25rem 0.5rem;">
+          <div style="width: 2rem;">5.</div>
+          <div style="margin-left: 1rem; width: 8rem; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">Juara 1</div>
+          <div style="margin-left: 1rem; width: 3rem; text-align: right;">120</div>
+        </li>
+        <li style="display: flex; padding: 0.25rem 0.5rem; background: #CBD5E099; border-radius: 0.25rem;">
+          <div style="width: 2rem;">121.</div>
+          <div style="margin-left: 1rem; width: 8rem; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">Juara 1</div>
+          <div style="margin-left: 1rem; width: 3rem; text-align: right;">25</div>
+        </li>
+      </ul>
+    </div>
   </div>
 
   <div id="title-ui">
-    <div class="box">
+    <div class="box" style="width: 100%; max-width: 18rem;">
       <label for="name-input" class="visuallyhidden">Enter your name</label>
       <input id="name-input" type="text" placeholder="Enter" maxlength="15" />
       <button id="start-button" type="button">Play</button>

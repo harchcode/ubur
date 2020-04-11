@@ -146,17 +146,17 @@ export class Drawer implements DrawerInterface {
 
   private drawFood = (sphere: Sphere) => {
     this.shader.setColor(FOOD_COLORS[sphere.colorIndex]);
-    this.shader.circle(sphere.x, sphere.y, sphere.cr);
+    this.shader.circle(sphere.x, sphere.y, sphere.r);
   };
 
   private drawAM = (sphere: Sphere) => {
     this.shader.setColor(AM_COLOR);
-    this.shader.circle(sphere.x, sphere.y, sphere.cr);
+    this.shader.circle(sphere.x, sphere.y, sphere.r);
   };
 
   private drawPlayer = (sphere: Sphere) => {
     this.shader.setColor(PLAYER_COLORS[sphere.colorIndex]);
-    this.shader.circle(sphere.x, sphere.y, sphere.cr);
+    this.shader.circle(sphere.x, sphere.y, sphere.r);
 
     const screenR = this.camera.getOnScreenW(sphere.r);
 

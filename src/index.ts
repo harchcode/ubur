@@ -66,8 +66,7 @@ game.start(updater, drawer);
 startButton.onclick = () => {
   titleUI.style.display = 'none';
   const player = game.spawnPlayer(nameInput.value);
-  player.r = 100;
-  player.cr = 100;
+  player.r = 5;
   player.vx = 0;
   player.vy = 0;
   drawer.setPlayerSphere(player);
