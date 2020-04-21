@@ -60,13 +60,13 @@ export class Shader {
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   };
 
-  circle = (x: number, y: number, r: number) => {
+  circle = (x: number, y: number, r: number, z = 0) => {
     const { gl } = this.graphics;
 
     this.setCircle(true);
 
     mat4.identity(this.mat);
-    mat4.translate(this.mat, x, y, 0);
+    mat4.translate(this.mat, x, y, z);
     mat4.scale(this.mat, r * 2, r * 2, 0);
 
     gl.uniformMatrix4fv(this.transformHandle, false, this.mat);

@@ -66,10 +66,12 @@ export const FOOD_SPAWN_R_MAX = 5;
 export const AM_SPAWN_R_MIN = 1;
 export const AM_SPAWN_R_MAX = 20;
 
+export const SHOOT_DELAY = 100;
 export const SHOOT_AREA_RATIO_SQ = 0.98;
 export const SHOOT_AREA_RATIO = Math.sqrt(SHOOT_AREA_RATIO_SQ);
-export const SHOOT_FORCE = 10;
-export const BULLET_SPEED = 50;
+export const BULLET_AREA_RATIO = Math.sqrt(1 - SHOOT_AREA_RATIO_SQ);
+export const SHOOT_FORCE = 5;
+export const BULLET_SPEED = 120;
 
 export const SPHERE_R_CHANGE_SPEED = 10;
 

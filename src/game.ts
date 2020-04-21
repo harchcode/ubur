@@ -19,12 +19,15 @@ import {
   AM_SPAWN_R_MIN,
   AM_SPAWN_R_MAX,
   STARTING_PLAYER_R,
-  STARTING_PLAYER_R_RANDOMNESS
+  STARTING_PLAYER_R_RANDOMNESS,
+  BULLET_AREA_RATIO,
+  BULLET_SPEED
 } from './constants';
 import { World } from './world';
 
 export class Game implements GameInterface {
   spheres: PoolInterface<Sphere>;
+  players: PoolInterface<Sphere>;
   commands: PoolInterface<ShootCommand>;
   world: World;
 
@@ -34,6 +37,28 @@ export class Game implements GameInterface {
         id: 0,
         name: 'Sphere',
         type: SphereType.FOOD,
+        x: 0,
+        y: 0,
+        vx: 0,
+        vy: 0,
+        r: 0,
+        colorIndex: 0
+      }),
+      (obj: Sphere) => {
+        obj.x = 0;
+        obj.y = 0;
+        obj.vx = 0;
+        obj.vy = 0;
+        obj.r = 0;
+        obj.colorIndex = 0;
+      }
+    );
+
+    this.players = new Pool<Sphere>(
+      () => ({
+        id: 0,
+        name: 'Sphere',
+        type: SphereType.PLAYER,
         x: 0,
         y: 0,
         vx: 0,
@@ -120,7 +145,7 @@ export class Game implements GameInterface {
   };
 
   spawnPlayer = (name: string) => {
-    const newSphere = this.spheres.obtain();
+    const newSphere = this.players.obtain();
 
     newSphere.type = SphereType.PLAYER;
     newSphere.name = name || 'Anon';
@@ -128,8 +153,8 @@ export class Game implements GameInterface {
       STARTING_PLAYER_R - STARTING_PLAYER_R_RANDOMNESS,
       STARTING_PLAYER_R + STARTING_PLAYER_R_RANDOMNESS
     );
-    newSphere.x = rand(newSphere.r, WORLD_L - newSphere.r);
-    newSphere.y = rand(newSphere.r, WORLD_L - newSphere.r);
+    newSphere.x = randInt(newSphere.r, WORLD_L - newSphere.r);
+    newSphere.y = randInt(newSphere.r, WORLD_L - newSphere.r);
     newSphere.vx = 10;
     newSphere.vy = 5;
     newSphere.colorIndex = randInt(0, PLAYER_COLORS.length - 1);
@@ -145,5 +170,23 @@ export class Game implements GameInterface {
     command.shooter = sphere;
     command.dirx = dirx;
     command.diry = diry;
+  };
+
+  spawnBullet = (shooter: Sphere, dirx: number, diry: number) => {
+    const newSphere = this.spheres.obtain();
+
+    newSphere.type = SphereType.BULLET;
+    newSphere.name = '';
+    newSphere.r = shooter.r * BULLET_AREA_RATIO;
+    newSphere.x = shooter.x + dirx * (shooter.r - newSphere.r);
+    newSphere.y = shooter.y + diry * (shooter.r - newSphere.r);
+    newSphere.vx = dirx * BULLET_SPEED;
+    newSphere.vy = diry * BULLET_SPEED;
+    newSphere.colorIndex = shooter.colorIndex;
+    newSphere.shooter = shooter;
+
+    this.world.insert(newSphere);
+
+    return newSphere;
   };
 }

@@ -141,10 +141,17 @@ export class Drawer implements DrawerInterface {
       this.drawAM(sphere);
     } else if (sphere.type === SphereType.FOOD) {
       this.drawFood(sphere);
+    } else if (sphere.type === SphereType.BULLET) {
+      this.drawBullet(sphere);
     }
   };
 
   private drawFood = (sphere: Sphere) => {
+    this.shader.setColor(FOOD_COLORS[sphere.colorIndex]);
+    this.shader.circle(sphere.x, sphere.y, sphere.r);
+  };
+
+  private drawBullet = (sphere: Sphere) => {
     this.shader.setColor(FOOD_COLORS[sphere.colorIndex]);
     this.shader.circle(sphere.x, sphere.y, sphere.r);
   };
@@ -173,6 +180,7 @@ export class Drawer implements DrawerInterface {
 
   private drawSpheres = () => {
     this.game.spheres.forEach(this.drawSphere);
+    this.game.players.forEach(this.drawSphere);
   };
 
   private drawArena = () => {

@@ -47,6 +47,8 @@ export class Updater implements UpdaterInterface {
       shooter.vy = (shooter.vy / speed) * MAX_SPHERE_SPEED;
     }
 
+    this.game.spawnBullet(shooter, command.dirx, command.diry);
+
     shooter.r *= SHOOT_AREA_RATIO;
 
     this.game.commands.free(command);
@@ -62,6 +64,8 @@ export class Updater implements UpdaterInterface {
   }
 
   private onCollision = (sphere1: Sphere, sphere2: Sphere) => {
+    if (sphere1.shooter === sphere2 || sphere2.shooter === sphere1) return;
+
     const distanceSq =
       (sphere2.x - sphere1.x) * (sphere2.x - sphere1.x) +
       (sphere2.y - sphere1.y) * (sphere2.y - sphere1.y);
@@ -90,7 +94,13 @@ export class Updater implements UpdaterInterface {
       eaten.r = 0;
 
       this.onEaten?.(eaten);
-      this.game.spheres.free(eaten);
+
+      if (eaten.type === SphereType.PLAYER) {
+        this.game.players.free(eaten);
+      } else {
+        this.game.spheres.free(eaten);
+      }
+
       this.game.world.remove(eaten);
 
       return;
@@ -114,7 +124,13 @@ export class Updater implements UpdaterInterface {
       smaller.r = 0;
 
       this.onEaten?.(smaller);
-      this.game.spheres.free(smaller);
+
+      if (smaller.type === SphereType.PLAYER) {
+        this.game.players.free(smaller);
+      } else {
+        this.game.spheres.free(smaller);
+      }
+
       this.game.world.remove(smaller);
 
       return;
@@ -145,6 +161,7 @@ export class Updater implements UpdaterInterface {
     if (left < 0) {
       sphere.x -= left;
       sphere.vx *= -1;
+      sphere.shooter = null;
     }
 
     if (right > WORLD_L) {
@@ -152,6 +169,7 @@ export class Updater implements UpdaterInterface {
 
       sphere.x -= rem;
       sphere.vx *= -1;
+      sphere.shooter = null;
     }
 
     if (top > WORLD_L) {
@@ -159,11 +177,13 @@ export class Updater implements UpdaterInterface {
 
       sphere.y -= rem;
       sphere.vy *= -1;
+      sphere.shooter = null;
     }
 
     if (bottom < 0) {
       sphere.y -= bottom;
       sphere.vy *= -1;
+      sphere.shooter = null;
     }
 
     this.game.world.move(sphere, oldX, oldY);
