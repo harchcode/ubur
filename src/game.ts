@@ -44,7 +44,8 @@ export class Game implements GameInterface {
         vx: 0,
         vy: 0,
         r: 0,
-        colorIndex: 0
+        colorIndex: 0,
+        shooter: null
       }),
       (obj: Sphere) => {
         obj.x = 0;
@@ -53,6 +54,7 @@ export class Game implements GameInterface {
         obj.vy = 0;
         obj.r = 0;
         obj.colorIndex = 0;
+        obj.shooter = null;
       }
     );
 
@@ -66,7 +68,8 @@ export class Game implements GameInterface {
         vx: 0,
         vy: 0,
         r: 0,
-        colorIndex: 0
+        colorIndex: 0,
+        shooter: null
       }),
       (obj: Sphere) => {
         obj.x = 0;
@@ -75,6 +78,7 @@ export class Game implements GameInterface {
         obj.vy = 0;
         obj.r = 0;
         obj.colorIndex = 0;
+        obj.shooter = null;
       }
     );
 
