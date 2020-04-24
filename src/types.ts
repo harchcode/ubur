@@ -48,6 +48,8 @@ export interface GameInterface {
   spawnFood: () => Sphere;
   spawnAM: () => Sphere;
   spawnBullet: (shooter: Sphere, dirx: number, diry: number) => Sphere;
+  spawnFakePlayer: (name: string) => Sphere;
+  respawnFakePlayer: (prev: Sphere) => Sphere;
   shoot: (sphere: Sphere, dirx: number, diry: number) => void;
 }
 
@@ -76,4 +78,5 @@ export interface PoolInterface<T extends Poolable> {
   free: (obj: T | number) => void;
   forEach: (fn: (obj: T, i: number) => void) => void;
   toArray: () => T[];
+  count: () => number;
 }

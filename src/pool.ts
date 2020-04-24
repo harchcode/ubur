@@ -80,4 +80,8 @@ export class Pool<T extends Poolable> implements PoolInterface<T> {
 
     return r;
   };
+
+  count = (): number => {
+    return this.currentSize - this.availableIds.length;
+  };
 }

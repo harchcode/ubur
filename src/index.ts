@@ -75,7 +75,11 @@ const updater = new Updater(game, (eaten: Sphere) => {
     gameUI.style.display = 'none';
 
     window.removeEventListener('mousedown', onClick);
+
+    return true;
   }
+
+  return false;
 });
 
 game.start(updater, drawer);
@@ -87,15 +91,12 @@ startButton.onclick = () => {
   gameUI.style.display = 'block';
 
   const player = game.spawnPlayer(nameInput.value);
-  player.r = 4;
-  player.vx = 0;
-  player.vy = 0;
   drawer.setPlayerSphere(player);
 
   window.addEventListener('mousedown', onClick);
 
   const updateScore = () => {
-    if (player.r <= 0) return;
+    if (!drawer.playerSphere) return;
 
     const playerScore = Math.floor(
       circleAreaFromRadius(player.r) * 100

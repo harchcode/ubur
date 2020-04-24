@@ -21,7 +21,9 @@ import {
   STARTING_PLAYER_R,
   STARTING_PLAYER_R_RANDOMNESS,
   BULLET_AREA_RATIO,
-  BULLET_SPEED
+  BULLET_SPEED,
+  MAX_SPHERE_SPEED,
+  FAKE_PLAYER_NAMES
 } from './constants';
 import { World } from './world';
 
@@ -102,8 +104,8 @@ export class Game implements GameInterface {
       this.spawnFood();
     }
 
-    for (let i = 0; i < 100; i++) {
-      this.spawnPlayer('Player');
+    for (let i = 0; i < 99; i++) {
+      this.spawnFakePlayer(this.getRandomFakeName());
     }
 
     const loop = new GameLoop(updater, drawer);
@@ -155,8 +157,45 @@ export class Game implements GameInterface {
     );
     newSphere.x = randInt(newSphere.r, WORLD_L - newSphere.r);
     newSphere.y = randInt(newSphere.r, WORLD_L - newSphere.r);
-    newSphere.vx = 10;
-    newSphere.vy = 5;
+    newSphere.vx = 0;
+    newSphere.vy = 0;
+    newSphere.colorIndex = randInt(0, PLAYER_COLORS.length - 1);
+
+    this.world.insert(newSphere);
+
+    return newSphere;
+  };
+
+  private getRandomFakeName = () => {
+    return FAKE_PLAYER_NAMES[randInt(0, FAKE_PLAYER_NAMES.length - 1)];
+  };
+
+  respawnFakePlayer = (prev: Sphere) => {
+    const rename = randInt(1, 100);
+
+    return this.spawnFakePlayer(
+      rename < 90 ? prev.name : this.getRandomFakeName()
+    );
+  };
+
+  spawnFakePlayer = (name: string) => {
+    const newSphere = this.players.obtain();
+
+    newSphere.type = SphereType.PLAYER;
+    newSphere.name = name || 'Fake Player';
+    newSphere.r = rand(
+      STARTING_PLAYER_R - STARTING_PLAYER_R_RANDOMNESS,
+      STARTING_PLAYER_R + STARTING_PLAYER_R_RANDOMNESS
+    );
+    newSphere.x = randInt(newSphere.r, WORLD_L - newSphere.r);
+    newSphere.y = randInt(newSphere.r, WORLD_L - newSphere.r);
+
+    const speed = rand(1, MAX_SPHERE_SPEED * 0.9);
+    const dirx = rand(0, 1);
+    const diry = Math.sqrt(1 - dirx);
+
+    newSphere.vx = dirx * speed;
+    newSphere.vy = diry * speed;
     newSphere.colorIndex = randInt(0, PLAYER_COLORS.length - 1);
 
     this.world.insert(newSphere);

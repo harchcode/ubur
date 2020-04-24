@@ -11,19 +11,40 @@ import {
   SHOOT_FORCE,
   MAX_SPHERE_SPEED,
   SHOOT_AREA_RATIO,
-  R_DECREASE_RATIO
+  R_DECREASE_RATIO,
+  FOOD_SPAWN_DELAY,
+  AM_SPAWN_DELAY,
+  MAX_SPHERE_COUNT
 } from './constants';
 
 export class Updater implements UpdaterInterface {
   game: GameInterface;
-  onEaten?: (eaten: Sphere) => void;
+  onEaten?: (eaten: Sphere) => boolean;
 
-  constructor(game: GameInterface, onEaten?: (eaten: Sphere) => void) {
+  private foodSpawnCounter = 0;
+  private amSpawnCounter = 0;
+
+  constructor(game: GameInterface, onEaten?: (eaten: Sphere) => boolean) {
     this.game = game;
     this.onEaten = onEaten;
   }
 
   update = (dt: number) => {
+    this.foodSpawnCounter += dt;
+    this.amSpawnCounter += dt;
+
+    if (this.foodSpawnCounter >= FOOD_SPAWN_DELAY) {
+      this.foodSpawnCounter -= FOOD_SPAWN_DELAY;
+
+      if (this.game.spheres.count() < MAX_SPHERE_COUNT) this.game.spawnFood();
+    }
+
+    if (this.amSpawnCounter >= AM_SPAWN_DELAY) {
+      this.amSpawnCounter -= AM_SPAWN_DELAY;
+
+      if (this.game.spheres.count() < MAX_SPHERE_COUNT) this.game.spawnAM();
+    }
+
     this.game.commands.forEach(this.handleCommand);
 
     this.game.world.update(dt, this.updateSphere);
@@ -76,13 +97,26 @@ export class Updater implements UpdaterInterface {
     if (sphere1.type === SphereType.AM || sphere2.type === SphereType.AM) {
       this.melt(bigger, smaller, distanceSq);
     } else if (
-      bigger.type === SphereType.FOOD &&
-      smaller.type !== SphereType.FOOD
+      (bigger.type === SphereType.FOOD || bigger.type === SphereType.BULLET) &&
+      smaller.type !== SphereType.FOOD &&
+      smaller.type !== SphereType.BULLET
     ) {
       this.absorb(smaller, bigger, distanceSq);
     } else {
       this.absorb(bigger, smaller, distanceSq);
     }
+  };
+
+  private freeSphere = (sphere: Sphere) => {
+    if (sphere.type === SphereType.PLAYER) {
+      if (!this.onEaten?.(sphere)) this.game.respawnFakePlayer(sphere);
+
+      this.game.players.free(sphere);
+    } else {
+      this.game.spheres.free(sphere);
+    }
+
+    this.game.world.remove(sphere);
   };
 
   private absorb(eater: Sphere, eaten: Sphere, distanceSq: number) {
@@ -93,15 +127,7 @@ export class Updater implements UpdaterInterface {
       );
       eaten.r = 0;
 
-      this.onEaten?.(eaten);
-
-      if (eaten.type === SphereType.PLAYER) {
-        this.game.players.free(eaten);
-      } else {
-        this.game.spheres.free(eaten);
-      }
-
-      this.game.world.remove(eaten);
+      this.freeSphere(eaten);
 
       return;
     }
@@ -123,15 +149,7 @@ export class Updater implements UpdaterInterface {
       bigger.r = Math.sqrt(bigger.r * bigger.r - smaller.r * smaller.r);
       smaller.r = 0;
 
-      this.onEaten?.(smaller);
-
-      if (smaller.type === SphereType.PLAYER) {
-        this.game.players.free(smaller);
-      } else {
-        this.game.spheres.free(smaller);
-      }
-
-      this.game.world.remove(smaller);
+      this.freeSphere(smaller);
 
       return;
     }
