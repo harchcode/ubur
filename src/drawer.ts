@@ -14,7 +14,8 @@ import {
   CAMERA_ZOOM_SPEED,
   PLAYER_NAME_COLORS,
   AM_COLOR,
-  FOOD_COLORS
+  FOOD_COLORS,
+  BULLET_COLORS
 } from './constants';
 
 const OOAGCL = 1 / ARENA_GRID_CELL_L;
@@ -152,7 +153,7 @@ export class Drawer implements DrawerInterface {
   };
 
   private drawBullet = (sphere: Sphere) => {
-    this.shader.setColor(FOOD_COLORS[sphere.colorIndex]);
+    this.shader.setColor(BULLET_COLORS[sphere.colorIndex]);
     this.shader.circle(sphere.x, sphere.y, sphere.r);
   };
 

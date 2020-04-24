@@ -47,6 +47,18 @@ export const FOOD_COLORS = [
   hex('#D53F8C') // pink
 ];
 
+export const BULLET_COLORS = [
+  hex('#E53E3E'), // red
+  hex('#DD6B20'), // orange
+  hex('#D69E2E'), // yellow
+  hex('#38A169'), // green
+  hex('#319795'), // teal
+  hex('#3182CE'), // blue
+  hex('#5A67D8'), // indigo
+  hex('#805AD5'), // purple
+  hex('#D53F8C') // pink
+];
+
 export const AM_COLOR = hex('#1A202C');
 
 export const PLAYER_NAME_COLORS = [

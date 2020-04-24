@@ -77,6 +77,14 @@
       box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
     }
 
+    button {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button:focus {
+      outline: 0;
+    }
+
     #start-button:focus {
       outline: 0;
     }
@@ -111,7 +119,15 @@
 
   <div id="game-ui" style="display: none;">
     <div class="box" style="position: absolute; top: 0; right: 0; padding: 0.5rem; margin: 1rem; width: 18rem;">
-      <ul class="rank-list" style="list-style: none; margin: 0; padding: 0;">
+      <button 
+        id="toggle-button"
+        type="button" 
+        style="display: block; width: 100%; padding: 0.25rem; cursor: pointer; background-color: #fffc; border-radius: 1rem; user-select: none; font-size: 0.75rem;"
+      >
+        Highscore (click to show/hide)
+      </button>
+
+      <ul id="rank-list" class="rank-list" style="display: block; list-style: none; margin: 0; padding: 0; margin-top: 0.25rem;">
         <li id="rank-1" style="display: flex; padding: 0.25rem 0.4rem; font-weight: bold; color: #C53030; font-size: 1.2rem; text-shadow: 0 0 2px #FEB2B2;">
           <div style="width: 1.25rem;">1</div>
           <div style="margin-left: 1rem; flex: 1 1 auto; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">Juara 1 sfklsfsf skfsm</div>

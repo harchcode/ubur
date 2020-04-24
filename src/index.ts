@@ -12,6 +12,10 @@ const startButton = document.getElementById(
   'start-button'
 ) as HTMLButtonElement;
 const scoreText = document.getElementById('score-text') as HTMLSpanElement;
+const toggleButton = document.getElementById(
+  'toggle-button'
+) as HTMLButtonElement;
+const rankList = document.getElementById('rank-list') as HTMLUListElement;
 
 const rankItems: HTMLLIElement[] = [];
 for (let i = 1; i <= 6; i++) {
@@ -144,4 +148,15 @@ startButton.onclick = () => {
   };
 
   updateScore();
+};
+
+toggleButton.onclick = (ev: MouseEvent) => {
+  if (rankList.style.display === 'block') {
+    rankList.style.display = 'none';
+  } else {
+    rankList.style.display = 'block';
+  }
+
+  ev.preventDefault();
+  ev.stopPropagation();
 };
