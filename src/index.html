@@ -33,7 +33,7 @@
     #title-ui {
       display: flex;
       flex-direction: column;
-      justify-content: space-around;
+      justify-content: center;
     }
 
     .box {
@@ -110,6 +110,58 @@
       background: #CBD5E099;
       border-radius: 0.25rem;
     }
+
+    .title-text {
+      text-align: center;
+      font-size: 5rem;
+      font-weight: bold;
+      text-shadow: 0 0 2px #000;
+      color: #A0AEC0;
+      margin-bottom: 1rem;
+      transform: scaleX(1.1);
+    }
+
+    @keyframes title-letter-animation {
+      0% { transform: rotateZ(0deg); }
+      25% { transform: rotateZ(-10deg); }
+      75% { transform: rotateZ(10deg); }
+      100% { transform: rotateZ(0deg); }
+    }
+
+    @keyframes abcd {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+
+    .title-text span {
+      display: inline-block;
+      animation: title-letter-animation 3s infinite;
+    }
+
+    .title-text span:nth-child(1) {
+      animation-delay: 1s;
+    }
+    .title-text span:nth-child(2) {
+      animation-delay: 1.25s;
+      animation-direction: reverse;
+    }
+    .title-text span:nth-child(3) {
+      animation-delay: 1.5s;
+    }
+    .title-text span:nth-child(4) {
+      animation-delay: 1.75s;
+      animation-direction: reverse;
+    }
+    .title-text span:nth-child(5) {
+      animation-delay: 2s;
+    }
+    .title-text span:nth-child(6) {
+      animation-delay: 2.25s;
+      animation-direction: reverse;
+    }
+    .title-text span:nth-child(7) {
+      animation-delay: 2.5s;
+    }
   </style>
   <title>Ubur.io</title>
 </head>
@@ -166,9 +218,12 @@
   </div>
 
   <div id="title-ui">
+    <div class="title-text">
+      <span>U</span><span>b</span><span>u</span><span>r</span><span>.</span><span>i</span><span>o</span>
+    </div>
     <div class="box" style="width: 100%; max-width: 18rem;">
       <label for="name-input" class="visuallyhidden">Enter your name</label>
-      <input id="name-input" type="text" placeholder="Enter" maxlength="15" />
+      <input id="name-input" type="text" placeholder="Enter your name" maxlength="15" />
       <button id="start-button" type="button">Play</button>
     </div>
   </div>

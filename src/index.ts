@@ -3,11 +3,15 @@ import { Updater } from './updater';
 import { Drawer } from './drawer';
 import { Sphere } from './types';
 import { circleAreaFromRadius } from './utils/math';
-import { SHOOT_DELAY } from './constants';
+import { SHOOT_DELAY, LS_PLAYER_NAME } from './constants';
 
 const gameUI = document.getElementById('game-ui') as HTMLDivElement;
 const titleUI = document.getElementById('title-ui') as HTMLDivElement;
 const nameInput = document.getElementById('name-input') as HTMLInputElement;
+
+const savedName = localStorage.getItem(LS_PLAYER_NAME) || '';
+nameInput.value = savedName;
+
 const startButton = document.getElementById(
   'start-button'
 ) as HTMLButtonElement;
@@ -94,6 +98,7 @@ startButton.onclick = () => {
   titleUI.style.display = 'none';
   gameUI.style.display = 'block';
 
+  localStorage.setItem(LS_PLAYER_NAME, nameInput.value);
   const player = game.spawnPlayer(nameInput.value);
   drawer.setPlayerSphere(player);
 

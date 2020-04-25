@@ -245,3 +245,5 @@ export const FAKE_PLAYER_NAMES = [
   'Superman',
   'Ice Queen'
 ];
+
+export const LS_PLAYER_NAME = 'playerName';
