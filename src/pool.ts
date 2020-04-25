@@ -66,4 +66,22 @@ export class Pool<T extends Poolable> implements PoolInterface<T> {
       }
     }
   }
+
+  toArray = (): T[] => {
+    const r: T[] = [];
+
+    for (const k in this.objs) {
+      const v = this.objs[k];
+
+      if (this.isAlive[v.id]) {
+        r.push(v);
+      }
+    }
+
+    return r;
+  };
+
+  count = (): number => {
+    return this.currentSize - this.availableIds.length;
+  };
 }

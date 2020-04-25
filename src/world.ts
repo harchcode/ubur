@@ -133,12 +133,24 @@ export class World implements WorldInterface {
     checkerFunc: (s1: Sphere, s2: Sphere) => boolean,
     onCollisionFunc: (s1: Sphere, s2: Sphere) => void
   ) {
+    let i = 0;
+    const n = cell.size;
+
     for (const s1 of cell) {
+      if (i === n - 1) break;
+
+      let j = 0;
+
       for (const s2 of cell) {
-        if (s2.id <= s1.id) continue;
+        if (j <= i) {
+          j++;
+          continue;
+        }
 
         if (checkerFunc(s1, s2)) onCollisionFunc(s1, s2);
       }
+
+      i++;
     }
   }
 

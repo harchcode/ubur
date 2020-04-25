@@ -8,8 +8,14 @@ export function circleAreaFromRadius(radius: number) {
   return Math.PI * radius * radius;
 }
 
+// inclusive
 export function randInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+// exclusive
+export function rand(min: number, max: number) {
+  return Math.random() * (max - min) + min;
 }
 
 export function nextPowerOf2(value: number): number {

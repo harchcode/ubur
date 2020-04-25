@@ -1,12 +1,28 @@
+export enum SphereType {
+  PLAYER,
+  FOOD,
+  AM,
+  BULLET
+}
+
 export type Sphere = {
   id: number;
   name: string;
+  type: SphereType;
   x: number;
   y: number;
   vx: number;
   vy: number;
   r: number;
   colorIndex: number;
+  shooter?: Sphere | null;
+};
+
+export type ShootCommand = {
+  id: number;
+  shooter: Sphere | null;
+  dirx: number;
+  diry: number;
 };
 
 export interface WorldInterface {
@@ -24,9 +40,17 @@ export interface WorldInterface {
 
 export interface GameInterface {
   spheres: PoolInterface<Sphere>;
+  players: PoolInterface<Sphere>;
+  commands: PoolInterface<ShootCommand>;
   world: WorldInterface;
   start: (updater: UpdaterInterface, drawer: DrawerInterface) => void;
   spawnPlayer: (name: string) => Sphere;
+  spawnFood: () => Sphere;
+  spawnAM: () => Sphere;
+  spawnBullet: (shooter: Sphere, dirx: number, diry: number) => Sphere;
+  spawnFakePlayer: (name: string) => Sphere;
+  respawnFakePlayer: (prev: Sphere) => Sphere;
+  shoot: (sphere: Sphere, dirx: number, diry: number) => void;
 }
 
 export interface UpdaterInterface {
@@ -53,4 +77,6 @@ export interface PoolInterface<T extends Poolable> {
   obtain: () => T;
   free: (obj: T | number) => void;
   forEach: (fn: (obj: T, i: number) => void) => void;
+  toArray: () => T[];
+  count: () => number;
 }
