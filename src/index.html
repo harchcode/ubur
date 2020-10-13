@@ -61,9 +61,15 @@
       outline: 0;
     }
 
+    #action-buttons {
+      margin: 2rem auto 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
     #start-button {
       display: block;
-      margin: 2rem auto 0 auto;
       cursor: pointer;
       border: 0;
       color: #2D3748;
@@ -75,6 +81,16 @@
       border-radius: 4px;
       background-color: #EDF2F7;
       box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    }
+
+    #help-button {
+      display: block;
+      margin-left: 0.5em;
+      border-radius: 100%;
+      font-size: 1em;
+      width: 1.5em;
+      height: 1.5em;
+      cursor: pointer;
     }
 
     button {
@@ -157,6 +173,28 @@
     .title-text span:nth-child(7) {
       animation-delay: 2.5s;
     }
+
+    #help-text {
+      margin-top: 2em;
+    }
+
+    #help-text h3 {
+      font-size: 0.9em;
+      margin: 0;
+      color: #718096;
+    }
+
+    #help-text ul {
+      font-size: 0.9em;
+      margin: 0.5em 0 0 0;
+      padding: 0 0 0 1em;
+      line-height: 1.5;
+      color: #4A5568;
+    }
+
+    #help-text ul li {
+      margin-top: 0.5em;
+    }
   </style>
   <title>Ubur.io</title>
 </head>
@@ -219,7 +257,19 @@
     <div class="box" style="width: 100%; max-width: 18rem;">
       <label for="name-input" class="visuallyhidden">Enter your name</label>
       <input id="name-input" type="text" placeholder="Enter your name" maxlength="15" />
-      <button id="start-button" type="button">Play</button>
+      <div id="action-buttons">
+        <div style="width: 1.5em;"></div>
+        <button id="start-button" type="button">Play</button>
+        <button id="help-button" type="button">?</button>
+      </div>
+      <div id="help-text">
+        <h3>How to play:</h3>
+        <ul>
+          <li>Click anywhere on the screen to shoot. You will move to the direction opposite of where you shot.</li>
+          <li>If 2 players collide, the bigger one will absorb the smaller one.</li>
+          <li>Beware of the black circles. They can absord anyone touching them.</li>
+        </ul>
+      </div>
     </div>
   </div>
     
