@@ -42,6 +42,12 @@
       border-radius: 1rem;
       padding: 2rem;
       margin: 0 auto;
+      overflow: hidden;
+    }
+
+    #title-box {
+      height: 11.5em;
+      transition: height 1s;
     }
 
     #name-input {
@@ -174,17 +180,17 @@
       animation-delay: 2.5s;
     }
 
-    #help-text {
+    #help-content {
       margin-top: 2em;
     }
 
-    #help-text h3 {
+    #help-content h3 {
       font-size: 0.9em;
       margin: 0;
       color: #718096;
     }
 
-    #help-text ul {
+    #help-content ul {
       font-size: 0.9em;
       margin: 0.5em 0 0 0;
       padding: 0 0 0 1em;
@@ -192,7 +198,7 @@
       color: #4A5568;
     }
 
-    #help-text ul li {
+    #help-content ul li {
       margin-top: 0.5em;
     }
   </style>
@@ -254,7 +260,7 @@
     <div class="title-text">
       <span>U</span><span>b</span><span>u</span><span>r</span><span>.</span><span>i</span><span>o</span>
     </div>
-    <div class="box" style="width: 100%; max-width: 18rem;">
+    <div id="title-box" class="box" style="width: 100%; max-width: 18rem;">
       <label for="name-input" class="visuallyhidden">Enter your name</label>
       <input id="name-input" type="text" placeholder="Enter your name" maxlength="15" />
       <div id="action-buttons">
@@ -262,7 +268,7 @@
         <button id="start-button" type="button">Play</button>
         <button id="help-button" type="button">?</button>
       </div>
-      <div id="help-text">
+      <div id="help-content">
         <h3>How to play:</h3>
         <ul>
           <li>Click anywhere on the screen to shoot. You will move to the direction opposite of where you shot.</li>
