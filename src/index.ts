@@ -17,7 +17,6 @@ const startButton = document.getElementById(
   'start-button'
 ) as HTMLButtonElement;
 const helpButton = document.getElementById('help-button') as HTMLButtonElement;
-const helpContent = document.getElementById('help-content') as HTMLDivElement;
 const scoreText = document.getElementById('score-text') as HTMLSpanElement;
 const toggleButton = document.getElementById(
   'toggle-button'
