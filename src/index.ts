@@ -12,9 +12,11 @@ const nameInput = document.getElementById('name-input') as HTMLInputElement;
 const savedName = localStorage.getItem(LS_PLAYER_NAME) || '';
 nameInput.value = savedName;
 
+const titleBox = document.getElementById('title-box') as HTMLDivElement;
 const startButton = document.getElementById(
   'start-button'
 ) as HTMLButtonElement;
+const helpButton = document.getElementById('help-button') as HTMLButtonElement;
 const scoreText = document.getElementById('score-text') as HTMLSpanElement;
 const toggleButton = document.getElementById(
   'toggle-button'
@@ -153,6 +155,17 @@ startButton.onclick = () => {
   };
 
   updateScore();
+};
+
+let isHelpShowing = false;
+helpButton.onclick = () => {
+  if (isHelpShowing) {
+    titleBox.style.height = '11.5em';
+    isHelpShowing = false;
+  } else {
+    titleBox.style.height = '27.5em';
+    isHelpShowing = true;
+  }
 };
 
 toggleButton.onclick = (ev: MouseEvent) => {
