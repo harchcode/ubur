@@ -1,7 +1,12 @@
-/node_modules
-/dist
+node_modules
 .DS_Store
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+dist
+dist-ssr
+*.local
+/target
+**/*.rs.bk
+Cargo.lock
+bin/
+pkg/
+wasm-pack.log
 .cache

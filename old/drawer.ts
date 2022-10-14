@@ -1,7 +1,7 @@
-import { DrawerInterface, GameInterface, Sphere, SphereType } from './types';
-import { Graphics } from './webgl/graphics';
-import { Shader } from './webgl/shader';
-import { Camera2D } from './webgl/camera2d';
+import { DrawerInterface, GameInterface, Sphere, SphereType } from "./types";
+import { Graphics } from "./webgl/graphics";
+import { Shader } from "./webgl/shader";
+import { Camera2D } from "./webgl/camera2d";
 import {
   BACK_COLOR,
   WORLD_L,
@@ -16,7 +16,7 @@ import {
   AM_COLOR,
   FOOD_COLORS,
   BULLET_COLORS
-} from './constants';
+} from "./constants";
 
 const OOAGCL = 1 / ARENA_GRID_CELL_L;
 export class Drawer implements DrawerInterface {
@@ -248,9 +248,9 @@ export class Drawer implements DrawerInterface {
   };
 
   private initNameCtx() {
-    this.nameCtx = this.nameCanvas.getContext('2d') as CanvasRenderingContext2D;
-    this.nameCtx.textAlign = 'center';
-    this.nameCtx.textBaseline = 'middle';
+    this.nameCtx = this.nameCanvas.getContext("2d") as CanvasRenderingContext2D;
+    this.nameCtx.textAlign = "center";
+    this.nameCtx.textBaseline = "middle";
 
     const nameCanvasL =
       this.nameCanvas.width > this.nameCanvas.height

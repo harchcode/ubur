@@ -1,5 +1,5 @@
-import { MPF } from './constants';
-import { UpdaterInterface, DrawerInterface } from './types';
+import { MPF } from "./constants";
+import { UpdaterInterface, DrawerInterface } from "./types";
 
 const SPF = MPF * 0.001;
 const raf = requestAnimationFrame || setTimeout;
