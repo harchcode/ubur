@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import { ViteMinifyPlugin } from "vite-plugin-minify";
+import glsl from "vite-plugin-glsl";
 
 export default defineConfig({
   server: {
@@ -7,6 +8,7 @@ export default defineConfig({
     host: true
   },
   plugins: [
+    glsl(),
     // input https://www.npmjs.com/package/html-minifier-terser options
     ViteMinifyPlugin({})
   ]

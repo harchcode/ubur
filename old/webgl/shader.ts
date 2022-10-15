@@ -1,10 +1,10 @@
-import { Graphics } from './graphics';
+import { Graphics } from "./graphics";
 
-import vsc from './shaders/simple.vert';
-import fsc from './shaders/simple.frag';
-import { Color } from '../utils/color';
-import mat4 from './mat4';
-import { Camera2D } from './camera2d';
+import vsc from "./shaders/simple.vert";
+import fsc from "./shaders/simple.frag";
+import { Color } from "../utils/color";
+import mat4 from "./mat4";
+import { Camera2D } from "./camera2d";
 
 export class Shader {
   readonly graphics: Graphics;
@@ -84,22 +84,11 @@ export class Shader {
     const { gl } = this.graphics;
 
     const squareVertices = [
-      0.5,
-      0.5,
-      0.0,
-      -0.5,
-      0.5,
-      0.0,
-      0.5,
-      -0.5,
-      0.0,
-      -0.5,
-      -0.5,
-      0.0
+      0.5, 0.5, 0.0, -0.5, 0.5, 0.0, 0.5, -0.5, 0.0, -0.5, -0.5, 0.0
     ];
     const vertexBuffer = gl.createBuffer();
 
-    if (!vertexBuffer) throw 'Failed to create buffer.';
+    if (!vertexBuffer) throw "Failed to create buffer.";
 
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
 
@@ -119,7 +108,7 @@ export class Shader {
   private initHandle = () => {
     const { gl } = this.graphics;
 
-    const positionHandle = gl.getAttribLocation(this.program, 'aPosition');
+    const positionHandle = gl.getAttribLocation(this.program, "aPosition");
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
 
@@ -135,10 +124,10 @@ export class Shader {
     this.positionHandle = positionHandle;
 
     try {
-      this.colorHandle = this.getUniformLocation('uColor');
-      this.transformHandle = this.getUniformLocation('uTransform');
-      this.vpHandle = this.getUniformLocation('uVPTransform');
-      this.circleHandle = this.getUniformLocation('uCircle');
+      this.colorHandle = this.getUniformLocation("uColor");
+      this.transformHandle = this.getUniformLocation("uTransform");
+      this.vpHandle = this.getUniformLocation("uVPTransform");
+      this.circleHandle = this.getUniformLocation("uCircle");
     } catch (err) {
       throw err;
     }
