@@ -3,9 +3,11 @@ import {
   beginDraw,
   drawRect,
   initGraphics,
-  resizeGraphics,
+  resizeGraphicsIfNeeded,
   setCircle,
-  setColor
+  setColor,
+  setViewPos,
+  setViewSize
 } from "./graphics";
 import vertexShaderSource from "./simple.vert";
 import fragmentShaderSource from "./simple.frag";
@@ -22,8 +24,18 @@ function update(dt: number) {
 }
 
 function draw() {
-  resizeGraphics();
+  const worldSize = Ubur.world_size();
+  const wsp2 = worldSize * 0.5;
+
+  resizeGraphicsIfNeeded();
   beginDraw();
+
+  setCircle(false);
+  setColor(0xffffff);
+  drawRect(-10, wsp2, 20, worldSize);
+  drawRect(worldSize + 10, wsp2, 20, worldSize);
+  drawRect(wsp2, -10, worldSize, 20);
+  drawRect(wsp2, worldSize + 10, worldSize, 20);
 
   const len = ubur.get_sphere_count();
 
@@ -53,6 +65,12 @@ async function main() {
   if (!initGraphics(gl, vertexShaderSource, fragmentShaderSource)) {
     return;
   }
+
+  const worldSize = Ubur.world_size();
+  const wsp2 = worldSize * 0.5;
+
+  setViewSize(Ubur.world_size() * Ubur.world_size() * 2.0);
+  setViewPos(wsp2, wsp2);
 
   ubur = Ubur.new();
   ubur.init();

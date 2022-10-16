@@ -1,3 +1,8 @@
+/**
+ * Handles rendering with WebGL
+ * We use rect's center as coordinate instead of top left.
+ */
+
 import { mat3, vec2 } from "gl-matrix";
 import { setColorArr } from "./utils";
 
@@ -20,12 +25,50 @@ const translationVec = vec2.create();
 const scaleVec = vec2.create();
 const transformMatrix = mat3.create();
 
-const rectPoints = new Float32Array([0, 0, 1, 0, 0, 1, 1, 1]);
+const rectPoints = new Float32Array([
+  -0.5, -0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5
+]);
 
+let viewArea = 10;
+let viewX = 0;
+let viewY = 0;
+const vpMatrix = mat3.create();
 const projectionMatrix = mat3.create();
-// const viewMatrix = mat3.create();
-// const viewTranslationVec = vec2.create();
-// const viewScaleVec = vec2.create();
+const viewMatrix = mat3.create();
+const viewTranslationVec = vec2.create();
+const viewScaleVec = vec2.create();
+
+function calcVPMatrix() {
+  mat3.identity(viewMatrix);
+  mat3.scale(viewMatrix, viewMatrix, viewScaleVec);
+  mat3.translate(viewMatrix, viewMatrix, viewTranslationVec);
+  mat3.multiply(vpMatrix, projectionMatrix, viewMatrix);
+}
+
+export function setViewSize(area: number) {
+  viewArea = area;
+  const canvas = gl.canvas;
+
+  const scale = Math.sqrt((canvas.width * canvas.height) / area);
+  vec2.set(viewScaleVec, scale, scale);
+}
+
+export function getViewWidth() {
+  return gl.canvas.width * viewScaleVec[0];
+}
+
+export function getViewHeight() {
+  return gl.canvas.height * viewScaleVec[1];
+}
+
+export function setViewPos(x: number, y: number) {
+  viewX = x;
+  viewY = y;
+
+  vec2.set(viewTranslationVec, -x, -y);
+  viewTranslationVec[0] += (gl.canvas.width * 0.5) / viewScaleVec[0];
+  viewTranslationVec[1] += (gl.canvas.height * 0.5) / viewScaleVec[1];
+}
 
 function createShader(gl: WebGLRenderingContext, type: number, source: string) {
   const shader = gl.createShader(type);
@@ -111,14 +154,29 @@ export function initGraphics(
   // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = positionBuffer)
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
 
-  mat3.identity(projectionMatrix);
-  mat3.projection(projectionMatrix, gl.canvas.width, gl.canvas.height);
-
+  setViewPos(0, 0);
   resizeGraphics();
+
   return true;
 }
 
 export function resizeGraphics() {
+  const canvas = gl.canvas;
+  const displayWidth = canvas.clientWidth;
+  const displayHeight = canvas.clientHeight;
+
+  canvas.width = displayWidth;
+  canvas.height = displayHeight;
+
+  gl.viewport(0, 0, canvas.width, canvas.height);
+
+  mat3.identity(projectionMatrix);
+  mat3.projection(projectionMatrix, canvas.width, canvas.height);
+  setViewSize(viewArea);
+  setViewPos(viewX, viewY);
+}
+
+export function resizeGraphicsIfNeeded() {
   const canvas = gl.canvas;
   const displayWidth = canvas.clientWidth;
   const displayHeight = canvas.clientHeight;
@@ -128,14 +186,7 @@ export function resizeGraphics() {
     canvas.width !== displayWidth || canvas.height !== displayHeight;
 
   if (needResize) {
-    // Make the canvas the same size
-    canvas.width = displayWidth;
-    canvas.height = displayHeight;
-
-    gl.viewport(0, 0, canvas.width, canvas.height);
-
-    mat3.identity(projectionMatrix);
-    mat3.projection(projectionMatrix, canvas.width, canvas.height);
+    resizeGraphics();
   }
 
   return needResize;
@@ -160,6 +211,8 @@ export function beginDraw() {
   const normalize = false; // don't normalize the data
   const stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
   gl.vertexAttribPointer(positionLocation, size, type, normalize, stride, 0);
+
+  calcVPMatrix();
 }
 
 export function setColor(rgb: number) {
@@ -178,11 +231,8 @@ export function drawRect(x: number, y: number, width: number, height: number) {
   mat3.translate(transformMatrix, transformMatrix, translationVec);
   mat3.scale(transformMatrix, transformMatrix, scaleVec);
 
-  // vec2.set(cameraTranslationVec, 1, 1);
-  // mat3.translate(projectionMatrix, projectionMatrix, cameraTranslationVec);
-
   // set transform
-  gl.uniformMatrix3fv(projectionLocation, false, projectionMatrix);
+  gl.uniformMatrix3fv(projectionLocation, false, vpMatrix);
   gl.uniformMatrix3fv(transformLocation, false, transformMatrix);
 
   // Draw the rectangle.

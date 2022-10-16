@@ -13,7 +13,7 @@ void main(void) {
   float alpha = 1.0;
 
   if (u_circle) {
-    vec2 cxy = 2.0 * (v_position - 0.5);
+    vec2 cxy = 2.0 * v_position;
     float r = dot(cxy, cxy);
 
     #ifdef GL_OES_standard_derivatives
