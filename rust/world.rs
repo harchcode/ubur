@@ -1,7 +1,7 @@
 use crate::{
     constants::MAX_SPHERE_R,
-    sphere::Sphere,
-    utils::{log, rand_int},
+    sphere::{Sphere, SphereType},
+    utils::{log, rand, rand_int},
 };
 
 pub struct World {
@@ -14,14 +14,24 @@ impl World {
     }
 
     pub fn init(&mut self) {
+        let tmp = [SphereType::PLAYER, SphereType::FOOD, SphereType::AM];
+
         for _ in 0..100 {
+            let tmpt = tmp[rand_int(0, tmp.len() as i32) as usize];
+            let tmpc = match tmpt {
+                SphereType::AM => 0u32,
+                SphereType::PLAYER => rand_int(0x666666, 0xa00000) as u32,
+                SphereType::FOOD => rand_int(0x333333, 0x666666) as u32,
+            };
+
             self.spheres.push(Sphere::new(
-                rand_int(100, 800) as f64,
-                rand_int(100, 800) as f64,
-                (rand_int(0, 100) as i32 - 50) as f64,
-                (rand_int(0, 100) as i32 - 50) as f64,
-                rand_int(10, 20) as f64,
-                rand_int(0x666666, 0xffffff) as u32,
+                rand(100.0, 800.0),
+                rand(100.0, 800.0),
+                rand(-50.0, 50.0),
+                rand(-50.0, 50.0),
+                rand(10.0, 20.0),
+                tmpc,
+                tmpt,
             ))
         }
     }
@@ -33,6 +43,17 @@ impl World {
         }
 
         // check collisions
+        self.check_collision();
+
+        // cleanup
+        for i in (0..self.spheres.len()).rev() {
+            if self.spheres[i].r <= 1.0 {
+                self.spheres.remove(i);
+            }
+        }
+    }
+
+    fn check_collision(&mut self) {
         let n = self.spheres.len();
 
         for i in 0..(n - 1) {
@@ -41,59 +62,34 @@ impl World {
                 let s2 = &self.spheres[j];
 
                 let distance_sq = (s2.x - s1.x) * (s2.x - s1.x) + (s2.y - s1.y) * (s2.y - s1.y);
+                let r_total_sq = (s1.r + s2.r) * (s1.r + s2.r);
 
-                if self.is_collide(s1, s2, distance_sq) {
+                if distance_sq <= r_total_sq {
                     (self.spheres[i].r, self.spheres[j].r) =
-                        self.handle_collision(s1, s2, distance_sq);
+                        World::handle_collision(s1, s2, distance_sq);
                 }
             }
         }
-
-        // cleanup
-        for i in (0..n).rev() {
-            if self.spheres[i].r <= 1.0 {
-                self.spheres.remove(i);
-            }
-        }
     }
 
-    fn is_collide(&self, s1: &Sphere, s2: &Sphere, distance_sq: f64) -> bool {
-        let r_total_sq = (s1.r + s2.r) * (s1.r + s2.r);
+    fn handle_collision(s1: &Sphere, s2: &Sphere, distance_sq: f64) -> (f64, f64) {
+        let bigger: &Sphere;
+        let smaller: &Sphere;
 
-        return distance_sq <= r_total_sq;
-    }
-
-    fn handle_collision(&self, s1: &Sphere, s2: &Sphere, distance_sq: f64) -> (f64, f64) {
-        let bigger: &Sphere = if s1.r > s2.r { s1 } else { s2 };
-
-        return self.absorb(s1, s2, bigger, distance_sq);
-    }
-
-    fn absorb(&self, s1: &Sphere, s2: &Sphere, eater: &Sphere, distance_sq: f64) -> (f64, f64) {
-        let eaten = if eater == s1 { s2 } else { s1 };
-        let eater_r: f64;
-        let eaten_r: f64;
-
-        if distance_sq <= eater.r * eater.r + eaten.r * eaten.r {
-            eater_r = f64::min(
-                f64::sqrt(eater.r * eater.r + eaten.r * eaten.r),
-                MAX_SPHERE_R,
-            );
-            eaten_r = 0.0;
+        if s1.r > s2.r {
+            bigger = s1;
+            smaller = s2;
         } else {
-            let distance = f64::sqrt(distance_sq);
-
-            let r1 = distance * 0.5
-                + f64::sqrt(0.5 * (eater.r * eater.r + eaten.r * eaten.r) - distance_sq * 0.25);
-
-            eater_r = f64::min(r1, MAX_SPHERE_R);
-            eaten_r = distance - eater_r;
+            bigger = s2;
+            smaller = s1;
         }
 
-        if eater == s1 {
-            return (eater_r, eaten_r);
+        if s1.r#type == SphereType::AM || s2.r#type == SphereType::AM {
+            Sphere::melt(s1, s2, bigger, distance_sq)
+        } else if bigger.r#type == SphereType::FOOD && smaller.r#type != SphereType::FOOD {
+            Sphere::absorb(s1, s2, smaller, distance_sq)
         } else {
-            return (eaten_r, eater_r);
+            Sphere::absorb(s1, s2, bigger, distance_sq)
         }
     }
 }

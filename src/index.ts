@@ -5,6 +5,7 @@ import {
   initGraphics,
   resizeGraphicsIfNeeded,
   setCircle,
+  setClearColor,
   setColor,
   setViewPos,
   setViewSize
@@ -31,7 +32,7 @@ function draw() {
   beginDraw();
 
   setCircle(false);
-  setColor(0xffffff);
+  setColor(0);
   drawRect(-10, wsp2, 20, worldSize);
   drawRect(worldSize + 10, wsp2, 20, worldSize);
   drawRect(wsp2, -10, worldSize, 20);
@@ -65,6 +66,8 @@ async function main() {
   if (!initGraphics(gl, vertexShaderSource, fragmentShaderSource)) {
     return;
   }
+
+  setClearColor(0xfffff0);
 
   const worldSize = Ubur.world_size();
   const wsp2 = worldSize * 0.5;

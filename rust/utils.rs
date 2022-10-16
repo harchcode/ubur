@@ -9,6 +9,10 @@ extern "C" {
     pub fn random() -> f64;
 }
 
-pub fn rand_int(min: usize, max: usize) -> usize {
-    (random() * (max - min) as f64 + min as f64) as usize
+pub fn rand(min: f64, max: f64) -> f64 {
+    random() * (max - min) + min
+}
+
+pub fn rand_int(min: i32, max: i32) -> i32 {
+    (random() * (max - min) as f64 + min as f64) as i32
 }

@@ -111,6 +111,12 @@ function createProgram(
   return undefined;
 }
 
+export function setClearColor(color: number) {
+  setColorArr(colorArr, color);
+
+  gl.clearColor(colorArr[0], colorArr[1], colorArr[2], colorArr[3]);
+}
+
 export function initGraphics(
   glContext: WebGLRenderingContext,
   vertexShaderSource: string,
@@ -137,8 +143,6 @@ export function initGraphics(
   } else {
     program = _program;
   }
-
-  gl.clearColor(0, 0, 0, 1);
 
   positionLocation = gl.getAttribLocation(program, "a_position");
 
