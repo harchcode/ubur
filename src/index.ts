@@ -47,6 +47,11 @@ function draw() {
     const color = ubur.get_sphere_color(i);
     const d = r * 2;
 
+    if (i === 0) {
+      setViewSize(250000 + r * 2000);
+      setViewPos(x, y);
+    }
+
     setCircle(true);
     setColor(color);
     drawRect(x, y, d, d);
@@ -67,12 +72,12 @@ async function main() {
     return;
   }
 
-  setClearColor(0xfffff0);
+  setClearColor(0xffffff);
 
   const worldSize = Ubur.world_size();
   const wsp2 = worldSize * 0.5;
 
-  setViewSize(Ubur.world_size() * Ubur.world_size() * 2.0);
+  setViewSize(200000);
   setViewPos(wsp2, wsp2);
 
   ubur = Ubur.new();

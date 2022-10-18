@@ -1,3 +1,7 @@
+use std::cell::Cell;
+
+use wasm_bindgen::JsValue;
+
 use crate::constants::{MAX_SPHERE_R, WORLD_SIZE};
 
 #[repr(u8)]
@@ -6,8 +10,10 @@ pub enum SphereType {
     PLAYER = 0,
     FOOD = 1,
     AM = 2,
+    BULLET = 3,
 }
 
+thread_local!(static MONSTER_ID: Cell<usize> = Cell::new(1));
 #[derive(PartialEq, Clone, Copy)]
 pub struct Sphere {
     pub x: f64,
@@ -30,6 +36,37 @@ impl Sphere {
             color,
             r#type,
         }
+    }
+
+    pub fn zero() -> Sphere {
+        Sphere {
+            x: 0.0,
+            y: 0.0,
+            vx: 0.0,
+            vy: 0.0,
+            r: 0.0,
+            color: 0,
+            r#type: SphereType::FOOD,
+        }
+    }
+
+    pub fn set(
+        &mut self,
+        x: f64,
+        y: f64,
+        vx: f64,
+        vy: f64,
+        r: f64,
+        color: u32,
+        r#type: SphereType,
+    ) {
+        self.x = x;
+        self.y = y;
+        self.vx = vx;
+        self.vy = vy;
+        self.r = r;
+        self.color = color;
+        self.r#type = r#type;
     }
 
     pub fn update(&mut self, dt: f64) {

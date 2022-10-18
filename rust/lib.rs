@@ -1,5 +1,7 @@
+pub mod command;
 pub mod constants;
 pub mod sphere;
+pub mod sphere_pool;
 pub mod utils;
 pub mod world;
 
@@ -32,6 +34,12 @@ impl Ubur {
 
     pub fn update(&mut self, dt: f64) {
         self.world.update(dt)
+    }
+
+    pub fn register_player(&mut self) -> usize {
+        self.world.spawn_player();
+
+        return self.world.spheres.len();
     }
 
     pub fn get_sphere_count(&self) -> usize {
