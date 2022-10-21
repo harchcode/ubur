@@ -6,7 +6,7 @@ use crate::{
     },
     pool::Pool,
     sphere::{Sphere, SphereType},
-    utils::{log, rand, rand_int},
+    utils::{log, rand, rand_color, rand_int},
 };
 
 pub struct World {
@@ -108,7 +108,7 @@ impl World {
             return;
         }
 
-        let color = rand_int(0x333333, 0x666666) as u32;
+        let color = rand_color(0x66, 0xcc);
 
         let (_, sphere) = self.spheres.obtain();
         sphere.set(x, y, 0.0, 0.0, r, color, SphereType::FOOD);
@@ -142,7 +142,7 @@ impl World {
             }
         }
 
-        let color = rand_int(0x333333, 0x666666) as u32;
+        let color = rand_color(0x66, 0xcc);
 
         let speed = 100.0;
         let dirx = rand(0.0, 1.0);
@@ -172,7 +172,7 @@ impl World {
             return;
         }
 
-        let color = rand_int(0x333333, 0x666666) as u32;
+        let color = rand_color(0x66, 0xcc);
 
         let speed = rand(1.0, MAX_SPHERE_SPEED * 0.9);
         let dirx = rand(0.0, 1.0);
@@ -211,7 +211,7 @@ impl World {
         prev.r = r;
         prev.x = x;
         prev.y = y;
-        prev.color = rand_int(0x333333, 0x666666) as u32;
+        prev.color = rand_color(0x66, 0xcc);
 
         let speed = rand(1.0, MAX_SPHERE_SPEED * 0.9);
         let dirx = rand(0.0, 1.0);

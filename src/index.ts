@@ -28,11 +28,11 @@ function update(dt: number) {
 }
 
 const BG_CELLS_PER_ROW = 5;
-const GRID_LINE_WIDTH = 1;
-const CLEAR_COLOR = 0xcdfcf6;
-const BG_COLOR = 0xfaf7f0;
-const GRID_LINE_COLOR = 0xbccef8;
-const WALL_COLOR = 0x98a8f8;
+const BG_COLOR = 0xd8e3e7;
+const CLEAR_COLOR = 0x51c4d3;
+const GRID_LINE_COLOR = 0x126e82;
+const WALL_COLOR = 0x132c33;
+const GRID_LINE_WIDTH = 2;
 const WALL_WIDTH = 4;
 const WALL_HALF_WIDTH = WALL_WIDTH * 0.5;
 

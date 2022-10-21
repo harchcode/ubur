@@ -34,3 +34,26 @@ pub fn next_power_of_2(value: usize) -> usize {
 
     return result;
 }
+
+pub fn rand_u32(min: u32, max: u32) -> u32 {
+    (random() * (max - min) as f64 + min as f64) as u32
+}
+
+pub fn rand_color(min: u32, max: u32) -> u32 {
+    let r = rand_u32(min, max);
+    let g = rand_u32(min, max);
+    let b = rand_u32(min, max);
+
+    return r * 0x10000 + g * 0x100 + b;
+}
+
+// export function setColorArr(out: Float32Array, color: number, opacity = 1) {
+//   color |= 0;
+
+//   out[3] = opacity;
+
+//   for (let i = 2; i >= 0; i--) {
+//     out[i] = (color % 0x100) / 0xff;
+//     color = (color / 0x100) | 0;
+//   }
+// }
