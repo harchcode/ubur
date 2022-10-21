@@ -70,6 +70,10 @@ export function setViewPos(x: number, y: number) {
   viewTranslationVec[1] += (gl.canvas.height * 0.5) / viewScaleVec[1];
 }
 
+export function getAspectRatio() {
+  return gl.canvas.width / gl.canvas.height;
+}
+
 function createShader(gl: WebGLRenderingContext, type: number, source: string) {
   const shader = gl.createShader(type);
   if (!shader) return undefined;

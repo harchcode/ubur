@@ -1,13 +1,13 @@
 use std::{collections::HashMap, hash::Hash, vec};
 
-use crate::utils::next_power_of_2;
+use crate::utils::{log, next_power_of_2};
 
 pub struct Pool<T> {
-    objs: Vec<T>,
+    pub objs: Vec<T>,
     is_alive: Vec<bool>,
-    objs_id_map: HashMap<*const T, usize>,
     available_ids: Vec<usize>,
     current_size: usize,
+    pub alive_ids: Vec<usize>,
     create_fn: fn() -> T,
 }
 
@@ -16,9 +16,9 @@ impl<T> Pool<T> {
         let mut x = Pool {
             objs: vec![],
             is_alive: vec![],
-            objs_id_map: HashMap::new(),
             available_ids: vec![],
             current_size: 0,
+            alive_ids: vec![],
             create_fn,
         };
 
@@ -31,59 +31,59 @@ impl<T> Pool<T> {
         for i in self.current_size..new_size {
             let new_obj = (self.create_fn)();
 
-            self.objs_id_map.insert(&new_obj, i);
-
-            // let is_alive = self.is_alive.entry(i).or_insert(false);
-            // *is_alive = false;
-
+            self.objs.push(new_obj);
             self.is_alive.push(false);
             self.available_ids.push(i);
         }
+
+        self.current_size = new_size;
     }
 
     pub fn get(&self, id: usize) -> &T {
         return &self.objs[id];
     }
 
-    pub fn get_id(&self, obj: &T) -> usize {
-        return *self.objs_id_map.get(&(obj as *const T)).unwrap();
+    pub fn get_mut(&mut self, id: usize) -> &mut T {
+        return &mut self.objs[id];
     }
 
-    // pub fn get_all(&mut self, out: &mut Vec<&T>) {
-    //     for i in 0..self.objs.len() {
-    //         let v = &self.objs[i];
+    pub fn update(&mut self) {
+        self.alive_ids.clear();
 
-    //         let id = *self.objs_id_map.get(&(v as *const T)).unwrap();
+        for id in 0..self.objs.len() {
+            if self.is_alive[id] {
+                self.alive_ids.push(id);
+            }
+        }
+    }
 
-    //         if self.is_alive[id] {
-    //             out.push(v);
-    //         }
-    //     }
-    // }
+    pub fn get_alive_ids(&mut self) -> Vec<usize> {
+        let mut r = vec![];
 
-    pub fn obtain(&mut self) -> &T {
+        for id in 0..self.objs.len() {
+            if self.is_alive[id] {
+                r.push(id);
+            }
+        }
+
+        return r;
+    }
+
+    pub fn obtain(&mut self) -> (usize, &mut T) {
         if self.available_ids.len() == 0 {
             self.expand(next_power_of_2(self.current_size + 1));
         }
 
-        if let Some(id) = self.available_ids.pop() {
-            self.is_alive[id] = false;
-            let obj = self.get(id);
+        let id = self.available_ids.pop().unwrap();
+        self.is_alive[id] = true;
+        let obj = &mut self.objs[id];
 
-            return obj;
-        } else {
-            panic!("Not found");
-        }
+        return (id, obj);
     }
 
     pub fn free(&mut self, id: usize) {
         self.is_alive[id] = false;
         self.available_ids.push(id);
-    }
-
-    pub fn free_obj(&mut self, obj: &T) {
-        let id = *self.objs_id_map.get(&(obj as *const T)).unwrap();
-        self.free(id);
     }
 
     pub fn clear(&mut self) {
