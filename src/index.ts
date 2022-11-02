@@ -36,7 +36,7 @@ const GRID_LINE_WIDTH = 2;
 const WALL_WIDTH = 4;
 const WALL_HALF_WIDTH = WALL_WIDTH * 0.5;
 
-function drawPlayer() {
+function drawPlayerAndBackground() {
   const worldSize = Ubur.world_size();
   const bgCellSize = worldSize / BG_CELLS_PER_ROW;
 
@@ -140,7 +140,7 @@ function draw() {
   resizeGraphicsIfNeeded();
   beginDraw();
 
-  drawPlayer();
+  drawPlayerAndBackground();
 
   const ar = getAspectRatio();
   const ptr = ubur.get_visible_sphere_ids(playerId, ar);

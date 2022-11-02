@@ -1,6 +1,7 @@
 {
   "name": "ubur",
   "version": "1.0.0",
+  "type": "module",
   "scripts": {
     "dev": "npm run wasm && run-p wasm-watch vite-dev",
     "build": "npm run wasm && npm run wasm-opt && tsc && vite build",
