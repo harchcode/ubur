@@ -164,6 +164,18 @@ function draw() {
   }
 }
 
+function onClick(ev: MouseEvent) {
+  if (!playerId) return;
+
+  const cx = window.innerWidth * 0.5;
+  const cy = window.innerHeight * 0.5;
+
+  const x = ev.clientX - cx;
+  const y = ev.clientY - cy;
+
+  ubur.shoot(playerId, x, y);
+}
+
 async function main() {
   const wasm = await init();
   memory = wasm.memory;
@@ -191,6 +203,8 @@ async function main() {
   ubur.init();
 
   playerId = ubur.register_player();
+
+  window.addEventListener("mousedown", onClick);
 
   const loop = new GameLoop(update, draw);
   loop.start();

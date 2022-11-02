@@ -1,7 +1,8 @@
 use crate::{
     constants::{
-        AM_SPAWN_DELAY, AM_SPAWN_R_MAX, AM_SPAWN_R_MIN, FOOD_SPAWN_DELAY, FOOD_SPAWN_R_MAX,
-        FOOD_SPAWN_R_MIN, MAX_SPHERE_COUNT, MAX_SPHERE_R, MAX_SPHERE_SPEED, STARTING_PLAYER_R,
+        AM_SPAWN_DELAY, AM_SPAWN_R_MAX, AM_SPAWN_R_MIN, BULLET_AREA_RATIO, BULLET_SPEED,
+        FOOD_SPAWN_DELAY, FOOD_SPAWN_R_MAX, FOOD_SPAWN_R_MIN, MAX_SPHERE_COUNT, MAX_SPHERE_R,
+        MAX_SPHERE_SPEED, SHOOT_DELAY, SPHERE_COLOR_MAX, SPHERE_COLOR_MIN, STARTING_PLAYER_R,
         STARTING_PLAYER_R_RANDOMNESS, WORLD_SIZE,
     },
     pool::Pool,
@@ -9,18 +10,26 @@ use crate::{
     utils::{log, rand, rand_color, rand_int},
 };
 
+pub enum Command {
+    Shoot(usize, f64, f64),
+}
+
 pub struct World {
     pub spheres: Pool<Sphere>,
+    pub commands: Vec<Command>,
     food_spawn_counter: f64,
     am_spawn_counter: f64,
+    shoot_counter: f64,
 }
 
 impl World {
     pub fn new() -> World {
         World {
             spheres: Pool::new(Sphere::zero, 1000),
+            commands: vec![],
             food_spawn_counter: 0.0,
             am_spawn_counter: 0.0,
+            shoot_counter: 0.0,
         }
     }
 
@@ -42,6 +51,7 @@ impl World {
         // spawn food and am
         self.food_spawn_counter += dt;
         self.am_spawn_counter += dt;
+        self.shoot_counter += dt;
 
         if self.food_spawn_counter >= FOOD_SPAWN_DELAY {
             self.food_spawn_counter -= FOOD_SPAWN_DELAY;
@@ -58,6 +68,25 @@ impl World {
                 self.spawn_am();
             }
         }
+
+        // handle commands
+        for i in 0..self.commands.len() {
+            let command = &self.commands[i];
+
+            match *command {
+                Command::Shoot(shooter_id, dirx, diry) => {
+                    {
+                        let shooter = self.spheres.get_mut(shooter_id);
+                        shooter.shoot(dirx, diry);
+                    }
+                    {
+                        let shooter = *self.spheres.get(shooter_id);
+                        self.spawn_bullet(&shooter, dirx, diry);
+                    }
+                }
+            }
+        }
+        self.commands.clear();
 
         // updates
         self.spheres.update();
@@ -108,7 +137,7 @@ impl World {
             return;
         }
 
-        let color = rand_color(0x66, 0xcc);
+        let color = rand_color(SPHERE_COLOR_MIN, SPHERE_COLOR_MAX);
 
         let (_, sphere) = self.spheres.obtain();
         sphere.set(x, y, 0.0, 0.0, r, color, SphereType::FOOD);
@@ -133,7 +162,7 @@ impl World {
         let mut y: f64;
 
         loop {
-            r = 250.0;
+            r = 50.0;
             x = rand(r, WORLD_SIZE - r);
             y = rand(r, WORLD_SIZE - r);
 
@@ -142,9 +171,9 @@ impl World {
             }
         }
 
-        let color = rand_color(0x66, 0xcc);
+        let color = rand_color(SPHERE_COLOR_MIN, SPHERE_COLOR_MAX);
 
-        let speed = 100.0;
+        let speed = 0.0;
         let dirx = rand(0.0, 1.0);
         let diry = f64::sqrt(1.0 - dirx);
 
@@ -172,7 +201,7 @@ impl World {
             return;
         }
 
-        let color = rand_color(0x66, 0xcc);
+        let color = rand_color(SPHERE_COLOR_MIN, SPHERE_COLOR_MAX);
 
         let speed = rand(1.0, MAX_SPHERE_SPEED * 0.9);
         let dirx = rand(0.0, 1.0);
@@ -211,7 +240,7 @@ impl World {
         prev.r = r;
         prev.x = x;
         prev.y = y;
-        prev.color = rand_color(0x66, 0xcc);
+        prev.color = rand_color(SPHERE_COLOR_MIN, SPHERE_COLOR_MAX);
 
         let speed = rand(1.0, MAX_SPHERE_SPEED * 0.9);
         let dirx = rand(0.0, 1.0);
@@ -222,6 +251,40 @@ impl World {
 
         prev.vx = dirx * speed * sx;
         prev.vy = diry * speed * sy;
+    }
+
+    pub fn spawn_bullet(&mut self, shooter: &Sphere, dirx: f64, diry: f64) {
+        // let shooter = self.spheres.get(shooter_id);
+
+        let r = shooter.r * BULLET_AREA_RATIO;
+        let x = shooter.x + dirx * (shooter.r + r);
+        let y = shooter.y + diry * (shooter.r + r);
+        let vx = dirx * BULLET_SPEED;
+        let vy = diry * BULLET_SPEED;
+        let color = rand_color(SPHERE_COLOR_MIN, SPHERE_COLOR_MAX);
+
+        // TODO: Add shooter
+        // let shooter = shooter
+
+        let (_, sphere) = self.spheres.obtain();
+        sphere.set(x, y, vx, vy, r, color, SphereType::BULLET);
+    }
+
+    pub fn shoot(&mut self, id: usize, x: f64, y: f64) {
+        let sphere = self.spheres.get_mut(id);
+
+        if sphere.shoot_delay > 0.0 {
+            return;
+        };
+
+        sphere.reset_shoot_delay();
+
+        let len = f64::sqrt(x * x + y * y);
+        let dirx = x / len;
+        let diry = y / len;
+
+        let command = Command::Shoot(id, dirx, diry);
+        self.commands.push(command);
     }
 
     fn check_collision(&mut self) {

@@ -1,4 +1,3 @@
-pub mod command;
 pub mod constants;
 pub mod pool;
 pub mod sphere;
@@ -100,5 +99,9 @@ impl Ubur {
         r.insert(0, r.len());
 
         return r.as_ptr();
+    }
+
+    pub fn shoot(&mut self, id: usize, x: f64, y: f64) {
+        self.world.shoot(id, x, y);
     }
 }

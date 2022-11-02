@@ -1,5 +1,5 @@
-import { Sphere, WorldInterface } from './types';
-import { WORLD_L, MAX_SPHERE_R } from './constants';
+import { Sphere, WorldInterface } from "./types";
+import { WORLD_L, MAX_SPHERE_R } from "./constants";
 
 export class World implements WorldInterface {
   private l = 0;

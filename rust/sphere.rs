@@ -1,8 +1,9 @@
 use std::cell::Cell;
 
-use wasm_bindgen::JsValue;
-
-use crate::constants::{MAX_SPHERE_R, WORLD_SIZE};
+use crate::constants::{
+    MAX_SPHERE_R, MAX_SPHERE_SPEED, R_DECREASE_RATIO, SHOOT_AREA_RATIO, SHOOT_DELAY, SHOOT_FORCE,
+    WORLD_SIZE,
+};
 
 #[repr(u8)]
 #[derive(PartialEq, Clone, Copy)]
@@ -23,6 +24,7 @@ pub struct Sphere {
     pub r: f64,
     pub color: u32,
     pub r#type: SphereType,
+    pub shoot_delay: f64,
 }
 
 impl Sphere {
@@ -35,6 +37,7 @@ impl Sphere {
             r,
             color,
             r#type,
+            shoot_delay: 0.0,
         }
     }
 
@@ -47,6 +50,7 @@ impl Sphere {
             r: 0.0,
             color: 0,
             r#type: SphereType::FOOD,
+            shoot_delay: 0.0,
         }
     }
 
@@ -69,7 +73,15 @@ impl Sphere {
         self.r#type = r#type;
     }
 
+    pub fn reset_shoot_delay(&mut self) {
+        self.shoot_delay = SHOOT_DELAY;
+    }
+
     pub fn update(&mut self, dt: f64) {
+        self.shoot_delay = f64::max(self.shoot_delay - dt, 0.0);
+
+        self.r -= R_DECREASE_RATIO * self.r * dt;
+
         self.x += self.vx * dt;
         self.y += self.vy * dt;
 
@@ -101,6 +113,22 @@ impl Sphere {
             self.y -= rem * 2.0;
             self.vy *= -1.0;
         }
+    }
+
+    pub fn shoot(&mut self, dirx: f64, diry: f64) {
+        self.vx -= dirx * SHOOT_FORCE;
+        self.vy -= diry * SHOOT_FORCE;
+
+        let speed_sq = self.vx * self.vx + self.vy * self.vy;
+
+        if speed_sq > MAX_SPHERE_SPEED * MAX_SPHERE_SPEED {
+            let speed = f64::sqrt(speed_sq);
+
+            self.vx = (self.vx / speed) * MAX_SPHERE_SPEED;
+            self.vy = (self.vy / speed) * MAX_SPHERE_SPEED;
+        }
+
+        self.r *= SHOOT_AREA_RATIO;
     }
 
     pub fn absorb(s1: &Sphere, s2: &Sphere, eater: &Sphere, distance_sq: f64) -> (f64, f64) {

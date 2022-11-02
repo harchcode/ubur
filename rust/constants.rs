@@ -10,3 +10,13 @@ pub static MAX_SPHERE_SPEED: f64 = 100.0;
 pub static FOOD_SPAWN_DELAY: f64 = 0.1;
 pub static AM_SPAWN_DELAY: f64 = 1.0;
 pub static MAX_SPHERE_COUNT: usize = 1000;
+pub static SPHERE_COLOR_MIN: u32 = 0x66;
+pub static SPHERE_COLOR_MAX: u32 = 0xcc;
+pub static R_DECREASE_RATIO: f64 = 0.001;
+
+pub static SHOOT_DELAY: f64 = 0.1;
+pub static SHOOT_AREA_RATIO_SQ: f64 = 0.98;
+pub static SHOOT_AREA_RATIO: f64 = 0.98994949366;
+pub static BULLET_AREA_RATIO: f64 = 0.14142135623;
+pub static SHOOT_FORCE: f64 = 5.0;
+pub static BULLET_SPEED: f64 = 120.0;
