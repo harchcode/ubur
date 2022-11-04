@@ -47,6 +47,21 @@ pub fn rand_color(min: u32, max: u32) -> u32 {
     return r * 0x10000 + g * 0x100 + b;
 }
 
+pub fn darken_color(color: u32, multiplier: f64) -> u32 {
+    let mut n = color;
+
+    let b = (((n % 0x100) as f64) * multiplier) as u32;
+    n /= 0x100;
+
+    let g = (((n % 0x100) as f64) * multiplier) as u32;
+    n /= 100;
+
+    let r = (((n % 0x100) as f64) * multiplier) as u32;
+    n /= 100;
+
+    return r * 0x10000 + g * 0x100 + b;
+}
+
 // export function setColorArr(out: Float32Array, color: number, opacity = 1) {
 //   color |= 0;
 

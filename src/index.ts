@@ -18,13 +18,25 @@ import { GameLoop } from "./gameloop";
 const worldCanvas = document.getElementById(
   "world-canvas"
 ) as HTMLCanvasElement;
+const titleUI = document.getElementById("title-ui") as HTMLCanvasElement;
+const playButton = document.getElementById("play-button") as HTMLButtonElement;
 
 let memory: WebAssembly.Memory;
 let ubur: Ubur;
-let playerId = -1;
+let playerId: number | undefined = undefined;
+let playerUid: number | undefined = undefined;
 
 function update(dt: number) {
   ubur.update(dt);
+
+  // check is player dead
+  if (!playerId || !playerUid) return;
+  if (ubur.is_player_dead(playerId, playerUid)) {
+    playerId = undefined;
+    playerUid = undefined;
+
+    titleUI.style.display = "flex";
+  }
 }
 
 const BG_CELLS_PER_ROW = 5;
@@ -40,12 +52,12 @@ function drawPlayerAndBackground() {
   const worldSize = Ubur.world_size();
   const bgCellSize = worldSize / BG_CELLS_PER_ROW;
 
-  const x = ubur.get_sphere_x(playerId);
-  const y = ubur.get_sphere_y(playerId);
-  const r = ubur.get_sphere_r(playerId);
-  const color = ubur.get_sphere_color(playerId);
-  const d = r * 2;
-  const area = ubur.get_sphere_view_area(playerId);
+  const x =
+    playerId !== undefined ? ubur.get_sphere_x(playerId) : worldSize * 0.5;
+  const y =
+    playerId !== undefined ? ubur.get_sphere_y(playerId) : worldSize * 0.5;
+  const area =
+    playerId !== undefined ? ubur.get_sphere_view_area(playerId) : 1000000;
   const ar = getAspectRatio();
 
   const h = Math.sqrt(area / ar);
@@ -72,35 +84,6 @@ function drawPlayerAndBackground() {
   setColor(BG_COLOR);
 
   drawRect(bx, by, bw, bh);
-
-  // draw wall
-  setColor(WALL_COLOR);
-
-  if (bl < GRID_LINE_WIDTH * 0.5) {
-    drawRect(
-      bl - WALL_HALF_WIDTH + GRID_LINE_WIDTH,
-      by,
-      WALL_WIDTH,
-      bh + (WALL_WIDTH - GRID_LINE_WIDTH) * 2
-    );
-  }
-
-  if (br > worldSize - GRID_LINE_WIDTH * 0.5) {
-    drawRect(
-      br + WALL_HALF_WIDTH - GRID_LINE_WIDTH,
-      by,
-      WALL_WIDTH,
-      bh + (WALL_WIDTH - GRID_LINE_WIDTH) * 2
-    );
-  }
-
-  if (bt < GRID_LINE_WIDTH * 0.5) {
-    drawRect(bx, bt - WALL_HALF_WIDTH + GRID_LINE_WIDTH, bw, WALL_WIDTH);
-  }
-
-  if (bb > worldSize - GRID_LINE_WIDTH * 0.5) {
-    drawRect(bx, bb + WALL_HALF_WIDTH - GRID_LINE_WIDTH, bw, WALL_WIDTH);
-  }
 
   // draw grid
   setColor(GRID_LINE_COLOR);
@@ -131,6 +114,45 @@ function drawPlayerAndBackground() {
     drawRect(bx, gy, bw, gh);
   }
 
+  // draw wall
+  setColor(WALL_COLOR);
+
+  if (bl < GRID_LINE_WIDTH * 0.5) {
+    drawRect(
+      bl - WALL_HALF_WIDTH,
+      by,
+      WALL_WIDTH,
+      bh + (WALL_WIDTH - GRID_LINE_WIDTH) * 2
+    );
+  }
+
+  if (br > worldSize - GRID_LINE_WIDTH * 0.5) {
+    drawRect(
+      br + WALL_HALF_WIDTH,
+      by,
+      WALL_WIDTH,
+      bh + (WALL_WIDTH - GRID_LINE_WIDTH) * 2
+    );
+  }
+
+  if (bt < GRID_LINE_WIDTH * 0.5) {
+    drawRect(bx, bt - WALL_HALF_WIDTH, bw, WALL_WIDTH);
+  }
+
+  if (bb > worldSize - GRID_LINE_WIDTH * 0.5) {
+    drawRect(bx, bb + WALL_HALF_WIDTH, bw, WALL_WIDTH);
+  }
+}
+
+function drawPlayer() {
+  if (playerId === undefined) return;
+
+  const x = ubur.get_sphere_x(playerId);
+  const y = ubur.get_sphere_y(playerId);
+  const r = ubur.get_sphere_r(playerId);
+  const color = ubur.get_sphere_color(playerId);
+  const d = r * 2;
+
   setCircle(true);
   setColor(color);
   drawRect(x, y, d, d);
@@ -143,7 +165,10 @@ function draw() {
   drawPlayerAndBackground();
 
   const ar = getAspectRatio();
-  const ptr = ubur.get_visible_sphere_ids(playerId, ar);
+  const ptr =
+    playerId !== undefined
+      ? ubur.get_visible_sphere_ids_of_sphere(playerId, ar)
+      : ubur.get_visible_sphere_ids(ar, 500, 500, 1000000);
   const len = new Uint32Array(memory.buffer, ptr, 1)[0];
   const ids = new Uint32Array(memory.buffer, ptr + 4, len);
 
@@ -162,9 +187,11 @@ function draw() {
     setColor(color);
     drawRect(x, y, d, d);
   }
+
+  drawPlayer();
 }
 
-function onClick(ev: MouseEvent) {
+function handleShoot(ev: MouseEvent) {
   if (!playerId) return;
 
   const cx = window.innerWidth * 0.5;
@@ -202,9 +229,19 @@ async function main() {
   ubur = Ubur.new();
   ubur.init();
 
-  playerId = ubur.register_player();
+  titleUI.style.display = "flex";
 
-  window.addEventListener("mousedown", onClick);
+  playButton.addEventListener("click", () => {
+    titleUI.style.display = "none";
+
+    const ptr = ubur.register_player();
+    const r = new Uint32Array(memory.buffer, ptr, 2);
+
+    playerId = r[0];
+    playerUid = r[1];
+  });
+
+  window.addEventListener("mousedown", handleShoot);
 
   const loop = new GameLoop(update, draw);
   loop.start();

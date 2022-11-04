@@ -1,13 +1,15 @@
+use std::collections::HashMap;
+
 use crate::{
     constants::{
         AM_SPAWN_DELAY, AM_SPAWN_R_MAX, AM_SPAWN_R_MIN, BULLET_AREA_RATIO, BULLET_SPEED,
-        FOOD_SPAWN_DELAY, FOOD_SPAWN_R_MAX, FOOD_SPAWN_R_MIN, MAX_SPHERE_COUNT, MAX_SPHERE_R,
-        MAX_SPHERE_SPEED, SHOOT_DELAY, SPHERE_COLOR_MAX, SPHERE_COLOR_MIN, STARTING_PLAYER_R,
-        STARTING_PLAYER_R_RANDOMNESS, WORLD_SIZE,
+        FOOD_SPAWN_DELAY, FOOD_SPAWN_R_MAX, FOOD_SPAWN_R_MIN, MAX_SPHERE_COUNT, MAX_SPHERE_SPEED,
+        SPHERE_COLOR_MAX, SPHERE_COLOR_MIN, STARTING_PLAYER_R, STARTING_PLAYER_R_RANDOMNESS,
+        WORLD_SIZE,
     },
     pool::Pool,
     sphere::{Sphere, SphereType},
-    utils::{log, rand, rand_color, rand_int},
+    utils::{darken_color, log, rand, rand_color, rand_int},
 };
 
 pub enum Command {
@@ -19,17 +21,19 @@ pub struct World {
     pub commands: Vec<Command>,
     food_spawn_counter: f64,
     am_spawn_counter: f64,
-    shoot_counter: f64,
+    is_fake_player_map: HashMap<usize, bool>,
+    current_uid: usize,
 }
 
 impl World {
     pub fn new() -> World {
         World {
-            spheres: Pool::new(Sphere::zero, 1000),
+            spheres: Pool::new(Sphere::zero, MAX_SPHERE_COUNT),
             commands: vec![],
             food_spawn_counter: 0.0,
             am_spawn_counter: 0.0,
-            shoot_counter: 0.0,
+            is_fake_player_map: HashMap::new(),
+            current_uid: 0,
         }
     }
 
@@ -43,7 +47,16 @@ impl World {
         }
 
         for _ in 0..99 {
-            self.spawn_fake_player();
+            let id = self.spawn_fake_player();
+            self.is_fake_player_map.insert(id, true);
+        }
+    }
+
+    pub fn increment_uid(&mut self) {
+        if self.current_uid == usize::MAX {
+            self.current_uid = 0;
+        } else {
+            self.current_uid += 1;
         }
     }
 
@@ -51,7 +64,6 @@ impl World {
         // spawn food and am
         self.food_spawn_counter += dt;
         self.am_spawn_counter += dt;
-        self.shoot_counter += dt;
 
         if self.food_spawn_counter >= FOOD_SPAWN_DELAY {
             self.food_spawn_counter -= FOOD_SPAWN_DELAY;
@@ -79,9 +91,9 @@ impl World {
                         let shooter = self.spheres.get_mut(shooter_id);
                         shooter.shoot(dirx, diry);
                     }
+
                     {
-                        let shooter = *self.spheres.get(shooter_id);
-                        self.spawn_bullet(&shooter, dirx, diry);
+                        self.spawn_bullet(shooter_id, dirx, diry);
                     }
                 }
             }
@@ -100,12 +112,19 @@ impl World {
         // check collisions
         self.check_collision();
 
+        // free spheres, or respawn fake player
         for i in 0..self.spheres.alive_ids.len() {
             let id = self.spheres.alive_ids[i];
             let sphere = &mut self.spheres.objs[id];
 
             if sphere.r <= 0.0 {
-                self.spheres.free(id);
+                if sphere.r#type == SphereType::PLAYER
+                    && *self.is_fake_player_map.get(&id).unwrap_or(&false)
+                {
+                    self.respawn_fake_player(id);
+                } else {
+                    self.spheres.free(id);
+                }
             }
         }
     }
@@ -140,7 +159,8 @@ impl World {
         let color = rand_color(SPHERE_COLOR_MIN, SPHERE_COLOR_MAX);
 
         let (_, sphere) = self.spheres.obtain();
-        sphere.set(x, y, 0.0, 0.0, r, color, SphereType::FOOD);
+        sphere.set(x, y, 0.0, 0.0, r, color, SphereType::FOOD, self.current_uid);
+        self.increment_uid();
     }
 
     pub fn spawn_am(&mut self) {
@@ -153,16 +173,20 @@ impl World {
         }
 
         let (_, sphere) = self.spheres.obtain();
-        sphere.set(x, y, 0.0, 0.0, r, 0, SphereType::AM);
+        sphere.set(x, y, 0.0, 0.0, r, 0, SphereType::AM, self.current_uid);
+        self.increment_uid();
     }
 
-    pub fn spawn_player(&mut self) -> usize {
-        let mut r: f64;
+    pub fn spawn_player(&mut self) -> (usize, usize) {
         let mut x: f64;
         let mut y: f64;
 
+        let r = rand(
+            STARTING_PLAYER_R - STARTING_PLAYER_R_RANDOMNESS,
+            STARTING_PLAYER_R + STARTING_PLAYER_R_RANDOMNESS,
+        );
+
         loop {
-            r = 50.0;
             x = rand(r, WORLD_SIZE - r);
             y = rand(r, WORLD_SIZE - r);
 
@@ -184,21 +208,30 @@ impl World {
         let vy = diry * speed * sy;
 
         let (id, sphere) = self.spheres.obtain();
-        sphere.set(x, y, vx, vy, r, color, SphereType::PLAYER);
+        let uid = self.current_uid;
+        sphere.set(x, y, vx, vy, r, color, SphereType::PLAYER, uid);
 
-        return id;
+        self.increment_uid();
+
+        return (id, uid);
     }
 
-    pub fn spawn_fake_player(&mut self) {
+    pub fn spawn_fake_player(&mut self) -> usize {
+        let mut x: f64;
+        let mut y: f64;
+
         let r = rand(
             STARTING_PLAYER_R - STARTING_PLAYER_R_RANDOMNESS,
             STARTING_PLAYER_R + STARTING_PLAYER_R_RANDOMNESS,
         );
-        let x = rand(r, WORLD_SIZE - r);
-        let y = rand(r, WORLD_SIZE - r);
 
-        if self.check_spawn_collision(x, y, r) {
-            return;
+        loop {
+            x = rand(r, WORLD_SIZE - r);
+            y = rand(r, WORLD_SIZE - r);
+
+            if !self.check_spawn_collision(x, y, r) {
+                break;
+            }
         }
 
         let color = rand_color(SPHERE_COLOR_MIN, SPHERE_COLOR_MAX);
@@ -213,20 +246,23 @@ impl World {
         let vx = dirx * speed * sx;
         let vy = diry * speed * sy;
 
-        let (_, sphere) = self.spheres.obtain();
-        sphere.set(x, y, vx, vy, r, color, SphereType::PLAYER);
+        let (id, sphere) = self.spheres.obtain();
+        sphere.set(x, y, vx, vy, r, color, SphereType::PLAYER, self.current_uid);
+        self.increment_uid();
+
+        return id;
     }
 
     pub fn respawn_fake_player(&mut self, id: usize) {
-        let mut r: f64;
         let mut x: f64;
         let mut y: f64;
 
+        let r = rand(
+            STARTING_PLAYER_R - STARTING_PLAYER_R_RANDOMNESS,
+            STARTING_PLAYER_R + STARTING_PLAYER_R_RANDOMNESS,
+        );
+
         loop {
-            r = rand(
-                STARTING_PLAYER_R - STARTING_PLAYER_R_RANDOMNESS,
-                STARTING_PLAYER_R + STARTING_PLAYER_R_RANDOMNESS,
-            );
             x = rand(r, WORLD_SIZE - r);
             y = rand(r, WORLD_SIZE - r);
 
@@ -253,21 +289,21 @@ impl World {
         prev.vy = diry * speed * sy;
     }
 
-    pub fn spawn_bullet(&mut self, shooter: &Sphere, dirx: f64, diry: f64) {
-        // let shooter = self.spheres.get(shooter_id);
+    pub fn spawn_bullet(&mut self, shooter_id: usize, dirx: f64, diry: f64) {
+        let shooter = self.spheres.get(shooter_id);
 
         let r = shooter.r * BULLET_AREA_RATIO;
-        let x = shooter.x + dirx * (shooter.r + r);
-        let y = shooter.y + diry * (shooter.r + r);
+        let x = shooter.x + dirx * (shooter.r - r);
+        let y = shooter.y + diry * (shooter.r - r);
         let vx = dirx * BULLET_SPEED;
         let vy = diry * BULLET_SPEED;
-        let color = rand_color(SPHERE_COLOR_MIN, SPHERE_COLOR_MAX);
-
-        // TODO: Add shooter
-        // let shooter = shooter
+        let color = darken_color(shooter.color, 0.75);
 
         let (_, sphere) = self.spheres.obtain();
-        sphere.set(x, y, vx, vy, r, color, SphereType::BULLET);
+        sphere.set(x, y, vx, vy, r, color, SphereType::BULLET, self.current_uid);
+        sphere.set_shooter(shooter_id);
+
+        self.increment_uid();
     }
 
     pub fn shoot(&mut self, id: usize, x: f64, y: f64) {
@@ -298,6 +334,10 @@ impl World {
                 let s1 = &self.spheres.objs[id1];
                 let s2 = &self.spheres.objs[id2];
 
+                if s1.shooter_id == Some(id2) || s2.shooter_id == Some(id1) {
+                    continue;
+                }
+
                 let distance_sq = (s2.x - s1.x) * (s2.x - s1.x) + (s2.y - s1.y) * (s2.y - s1.y);
                 let r_total_sq = (s1.r + s2.r) * (s1.r + s2.r);
 
@@ -308,20 +348,12 @@ impl World {
                         let s1 = &mut self.spheres.objs[id1];
 
                         s1.r = r1;
-
-                        if r1 <= 0.0 && s1.r#type == SphereType::PLAYER {
-                            self.respawn_fake_player(id1);
-                        }
                     }
 
                     {
                         let s2 = &mut self.spheres.objs[id2];
 
                         s2.r = r2;
-
-                        if r2 <= 0.0 && s2.r#type == SphereType::PLAYER {
-                            self.respawn_fake_player(id2);
-                        }
                     }
                 }
             }

@@ -14,11 +14,11 @@ pub struct Pool<T> {
 impl<T> Pool<T> {
     pub fn new(create_fn: fn() -> T, initial_size: usize) -> Pool<T> {
         let mut x = Pool {
-            objs: vec![],
-            is_alive: vec![],
-            available_ids: vec![],
+            objs: Vec::with_capacity(initial_size),
+            is_alive: Vec::with_capacity(initial_size),
+            available_ids: Vec::with_capacity(initial_size),
             current_size: 0,
-            alive_ids: vec![],
+            alive_ids: Vec::with_capacity(initial_size),
             create_fn,
         };
 

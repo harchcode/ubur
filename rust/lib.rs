@@ -5,8 +5,7 @@ pub mod utils;
 pub mod world;
 
 use crate::constants::WORLD_SIZE;
-use crate::sphere::Sphere;
-use crate::utils::{log, rand_int};
+use crate::utils::log;
 use wasm_bindgen::prelude::*;
 use world::World;
 
@@ -35,8 +34,13 @@ impl Ubur {
         self.world.update(dt)
     }
 
-    pub fn register_player(&mut self) -> usize {
-        return self.world.spawn_player();
+    pub fn register_player(&mut self) -> *const usize {
+        let (id, uid) = self.world.spawn_player();
+        let r = vec![id, uid];
+
+        // log(&format!("{:?}", r));
+
+        return r.as_ptr();
     }
 
     pub fn get_sphere_x(&self, id: usize) -> f64 {
@@ -64,14 +68,13 @@ impl Ubur {
         return r.as_ptr();
     }
 
-    pub fn get_sphere_view_area(&self, id: usize) -> f64 {
-        self.world.spheres.get(id).r * 2000.0 + 200000.0
-    }
-
-    pub fn get_visible_sphere_ids(&mut self, id: usize, aspect_ratio: f64) -> *const usize {
-        let s = self.world.spheres.get(id);
-        let (x, y) = (s.x, s.y);
-        let view_area = self.get_sphere_view_area(id);
+    pub fn get_visible_sphere_ids(
+        &mut self,
+        aspect_ratio: f64,
+        x: f64,
+        y: f64,
+        view_area: f64,
+    ) -> *const usize {
         let h = f64::sqrt(view_area / aspect_ratio);
         let w = aspect_ratio * h;
 
@@ -101,7 +104,29 @@ impl Ubur {
         return r.as_ptr();
     }
 
+    pub fn get_sphere_view_area(&self, id: usize) -> f64 {
+        self.world.spheres.get(id).r * 2000.0 + 200000.0
+    }
+
+    pub fn get_visible_sphere_ids_of_sphere(
+        &mut self,
+        id: usize,
+        aspect_ratio: f64,
+    ) -> *const usize {
+        let s = self.world.spheres.get(id);
+        let (x, y) = (s.x, s.y);
+        let view_area = self.get_sphere_view_area(id);
+
+        return self.get_visible_sphere_ids(aspect_ratio, x, y, view_area);
+    }
+
     pub fn shoot(&mut self, id: usize, x: f64, y: f64) {
         self.world.shoot(id, x, y);
+    }
+
+    pub fn is_player_dead(&mut self, id: usize, uid: usize) -> bool {
+        let s = self.world.spheres.get(id);
+
+        return s.r <= 0.0 || s.uid != uid;
     }
 }

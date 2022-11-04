@@ -25,6 +25,11 @@ pub struct Sphere {
     pub color: u32,
     pub r#type: SphereType,
     pub shoot_delay: f64,
+    pub shooter_id: Option<usize>,
+
+    // unique id, for now we use usize.
+    // I want to use u64, but JS does not support u64, and usize should be sufficient enough
+    pub uid: usize,
 }
 
 impl Sphere {
@@ -38,6 +43,8 @@ impl Sphere {
             color,
             r#type,
             shoot_delay: 0.0,
+            shooter_id: None,
+            uid: 0,
         }
     }
 
@@ -51,6 +58,8 @@ impl Sphere {
             color: 0,
             r#type: SphereType::FOOD,
             shoot_delay: 0.0,
+            shooter_id: None,
+            uid: 0,
         }
     }
 
@@ -63,6 +72,7 @@ impl Sphere {
         r: f64,
         color: u32,
         r#type: SphereType,
+        uid: usize,
     ) {
         self.x = x;
         self.y = y;
@@ -71,6 +81,13 @@ impl Sphere {
         self.r = r;
         self.color = color;
         self.r#type = r#type;
+        self.uid = uid;
+        self.reset_shoot_delay();
+        self.shooter_id = None;
+    }
+
+    pub fn set_shooter(&mut self, shooter_id: usize) {
+        self.shooter_id = Some(shooter_id);
     }
 
     pub fn reset_shoot_delay(&mut self) {
@@ -93,6 +110,8 @@ impl Sphere {
         if left < 0.0 {
             self.x -= left * 2.0;
             self.vx *= -1.0;
+
+            self.shooter_id = None;
         }
 
         if right > WORLD_SIZE {
@@ -100,11 +119,15 @@ impl Sphere {
 
             self.x -= rem * 2.0;
             self.vx *= -1.0;
+
+            self.shooter_id = None;
         }
 
         if top < 0.0 {
             self.y -= top * 2.0;
             self.vy *= -1.0;
+
+            self.shooter_id = None;
         }
 
         if bottom > WORLD_SIZE {
@@ -112,6 +135,8 @@ impl Sphere {
 
             self.y -= rem * 2.0;
             self.vy *= -1.0;
+
+            self.shooter_id = None;
         }
     }
 
@@ -123,7 +148,6 @@ impl Sphere {
 
         if speed_sq > MAX_SPHERE_SPEED * MAX_SPHERE_SPEED {
             let speed = f64::sqrt(speed_sq);
-
             self.vx = (self.vx / speed) * MAX_SPHERE_SPEED;
             self.vy = (self.vy / speed) * MAX_SPHERE_SPEED;
         }
