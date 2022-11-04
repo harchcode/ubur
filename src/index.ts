@@ -25,12 +25,20 @@ let memory: WebAssembly.Memory;
 let ubur: Ubur;
 let playerId: number | undefined = undefined;
 let playerUid: number | undefined = undefined;
+let viewX: number;
+let viewY: number;
+let viewArea: number;
 
 function update(dt: number) {
   ubur.update(dt);
 
-  // check is player dead
   if (!playerId || !playerUid) return;
+
+  viewX = ubur.get_sphere_x(playerId);
+  viewY = ubur.get_sphere_y(playerId);
+  viewArea = ubur.get_sphere_view_area(playerId);
+
+  // check is player dead
   if (ubur.is_player_dead(playerId, playerUid)) {
     playerId = undefined;
     playerUid = undefined;
@@ -52,24 +60,18 @@ function drawPlayerAndBackground() {
   const worldSize = Ubur.world_size();
   const bgCellSize = worldSize / BG_CELLS_PER_ROW;
 
-  const x =
-    playerId !== undefined ? ubur.get_sphere_x(playerId) : worldSize * 0.5;
-  const y =
-    playerId !== undefined ? ubur.get_sphere_y(playerId) : worldSize * 0.5;
-  const area =
-    playerId !== undefined ? ubur.get_sphere_view_area(playerId) : 1000000;
   const ar = getAspectRatio();
 
-  const h = Math.sqrt(area / ar);
+  const h = Math.sqrt(viewArea / ar);
   const w = ar * h;
 
-  setViewSize(area);
-  setViewPos(x, y);
+  setViewSize(viewArea);
+  setViewPos(viewX, viewY);
 
-  const left = x - w * 0.5;
-  const right = x + w * 0.5;
-  const top = y - h * 0.5;
-  const bottom = y + h * 0.5;
+  const left = viewX - w * 0.5;
+  const right = viewX + w * 0.5;
+  const top = viewY - h * 0.5;
+  const bottom = viewY + h * 0.5;
 
   const bl = Math.max(left, 0);
   const br = Math.min(right, worldSize);
@@ -147,8 +149,8 @@ function drawPlayerAndBackground() {
 function drawPlayer() {
   if (playerId === undefined) return;
 
-  const x = ubur.get_sphere_x(playerId);
-  const y = ubur.get_sphere_y(playerId);
+  const x = viewX;
+  const y = viewY;
   const r = ubur.get_sphere_r(playerId);
   const color = ubur.get_sphere_color(playerId);
   const d = r * 2;
@@ -165,10 +167,7 @@ function draw() {
   drawPlayerAndBackground();
 
   const ar = getAspectRatio();
-  const ptr =
-    playerId !== undefined
-      ? ubur.get_visible_sphere_ids_of_sphere(playerId, ar)
-      : ubur.get_visible_sphere_ids(ar, 500, 500, 1000000);
+  const ptr = ubur.get_visible_sphere_ids(ar, viewX, viewY, viewArea);
   const len = new Uint32Array(memory.buffer, ptr, 1)[0];
   const ids = new Uint32Array(memory.buffer, ptr + 4, len);
 
@@ -223,8 +222,12 @@ async function main() {
   const worldSize = Ubur.world_size();
   const wsp2 = worldSize * 0.5;
 
-  setViewSize(200000);
-  setViewPos(wsp2, wsp2);
+  viewX = wsp2;
+  viewY = wsp2;
+  viewArea = 200000;
+
+  setViewSize(viewArea);
+  setViewPos(viewX, viewY);
 
   ubur = Ubur.new();
   ubur.init();
