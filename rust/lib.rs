@@ -112,7 +112,7 @@ impl Ubur {
     }
 
     pub fn get_sphere_view_area(&self, id: usize) -> f64 {
-        self.world.spheres.get(id).r * 2000.0 + 200000.0
+        self.world.spheres.get(id).r * 2500.0 + 25000.0
     }
 
     pub fn get_visible_sphere_ids_of_sphere(

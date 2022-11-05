@@ -301,7 +301,9 @@ export function drawName(x: number, y: number, r: number, name: string) {
 
   const textScale = (_r / 25) * viewScaleVec[0];
   const oneOverTextScale = 1 / textScale;
+
   ctx.scale(textScale, textScale);
+
   const ax =
     ((x - viewX) * viewScaleVec[0] + ctx.canvas.width * 0.5) * oneOverTextScale;
   const ay =
