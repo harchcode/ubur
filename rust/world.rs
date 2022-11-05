@@ -3,9 +3,9 @@ use std::collections::HashMap;
 use crate::{
     constants::{
         AM_SPAWN_DELAY, AM_SPAWN_R_MAX, AM_SPAWN_R_MIN, BULLET_AREA_RATIO, BULLET_SPEED,
-        FOOD_SPAWN_DELAY, FOOD_SPAWN_R_MAX, FOOD_SPAWN_R_MIN, MAX_SPHERE_COUNT, MAX_SPHERE_SPEED,
-        SPHERE_COLOR_MAX, SPHERE_COLOR_MIN, STARTING_PLAYER_R, STARTING_PLAYER_R_RANDOMNESS,
-        WORLD_SIZE,
+        FAKE_NAME_LEN, FOOD_SPAWN_DELAY, FOOD_SPAWN_R_MAX, FOOD_SPAWN_R_MIN, MAX_SPHERE_COUNT,
+        MAX_SPHERE_SPEED, SPHERE_COLOR_MAX, SPHERE_COLOR_MIN, STARTING_PLAYER_R,
+        STARTING_PLAYER_R_RANDOMNESS, WORLD_SIZE,
     },
     pool::Pool,
     sphere::{Sphere, SphereType},
@@ -23,6 +23,10 @@ pub struct World {
     am_spawn_counter: f64,
     is_fake_player_map: HashMap<usize, bool>,
     current_uid: usize,
+
+    // mapping the name of spheres, for now
+    // just use index for fake name
+    pub name_map: HashMap<usize, usize>,
 }
 
 impl World {
@@ -34,6 +38,7 @@ impl World {
             am_spawn_counter: 0.0,
             is_fake_player_map: HashMap::new(),
             current_uid: 0,
+            name_map: HashMap::new(),
         }
     }
 
@@ -177,7 +182,7 @@ impl World {
         self.increment_uid();
     }
 
-    pub fn spawn_player(&mut self) -> (usize, usize) {
+    pub fn spawn_player(&mut self, _name: String) -> (usize, usize) {
         let mut x: f64;
         let mut y: f64;
 
@@ -250,6 +255,9 @@ impl World {
         sphere.set(x, y, vx, vy, r, color, SphereType::PLAYER, self.current_uid);
         self.increment_uid();
 
+        self.name_map
+            .insert(id, rand_int(0, FAKE_NAME_LEN as i32) as usize);
+
         return id;
     }
 
@@ -287,6 +295,11 @@ impl World {
 
         prev.vx = dirx * speed * sx;
         prev.vy = diry * speed * sy;
+
+        if rand_int(0, 100) >= 90 {
+            self.name_map
+                .insert(id, rand_int(0, FAKE_NAME_LEN as i32) as usize);
+        }
     }
 
     pub fn spawn_bullet(&mut self, shooter_id: usize, dirx: f64, diry: f64) {

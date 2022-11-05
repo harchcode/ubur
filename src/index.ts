@@ -1,6 +1,7 @@
 import init, { Ubur } from "../pkg/ubur";
 import {
   beginDraw,
+  drawName,
   drawRect,
   getAspectRatio,
   initGraphics,
@@ -14,17 +15,21 @@ import {
 import vertexShaderSource from "./simple.vert";
 import fragmentShaderSource from "./simple.frag";
 import { GameLoop } from "./gameloop";
+import { FAKE_PLAYER_NAMES } from "./utils";
 
 const worldCanvas = document.getElementById(
   "world-canvas"
 ) as HTMLCanvasElement;
+const nameCanvas = document.getElementById("name-canvas") as HTMLCanvasElement;
 const titleUI = document.getElementById("title-ui") as HTMLCanvasElement;
 const playButton = document.getElementById("play-button") as HTMLButtonElement;
+const nameInput = document.getElementById("name-input") as HTMLInputElement;
 
 let memory: WebAssembly.Memory;
 let ubur: Ubur;
 let playerId: number | undefined = undefined;
 let playerUid: number | undefined = undefined;
+let playerName = "";
 let viewX: number;
 let viewY: number;
 let viewArea: number;
@@ -56,7 +61,7 @@ const GRID_LINE_WIDTH = 2;
 const WALL_WIDTH = 4;
 const WALL_HALF_WIDTH = WALL_WIDTH * 0.5;
 
-function drawPlayerAndBackground() {
+function drawBackground() {
   const worldSize = Ubur.world_size();
   const bgCellSize = worldSize / BG_CELLS_PER_ROW;
 
@@ -120,21 +125,11 @@ function drawPlayerAndBackground() {
   setColor(WALL_COLOR);
 
   if (bl < GRID_LINE_WIDTH * 0.5) {
-    drawRect(
-      bl - WALL_HALF_WIDTH,
-      by,
-      WALL_WIDTH,
-      bh + (WALL_WIDTH - GRID_LINE_WIDTH) * 2
-    );
+    drawRect(bl - WALL_HALF_WIDTH, by, WALL_WIDTH, bh + WALL_WIDTH * 2);
   }
 
   if (br > worldSize - GRID_LINE_WIDTH * 0.5) {
-    drawRect(
-      br + WALL_HALF_WIDTH,
-      by,
-      WALL_WIDTH,
-      bh + (WALL_WIDTH - GRID_LINE_WIDTH) * 2
-    );
+    drawRect(br + WALL_HALF_WIDTH, by, WALL_WIDTH, bh + WALL_WIDTH * 2);
   }
 
   if (bt < GRID_LINE_WIDTH * 0.5) {
@@ -158,13 +153,16 @@ function drawPlayer() {
   setCircle(true);
   setColor(color);
   drawRect(x, y, d, d);
+
+  drawName(x, y, r, playerName);
 }
 
 function draw() {
   resizeGraphicsIfNeeded();
+
   beginDraw();
 
-  drawPlayerAndBackground();
+  drawBackground();
 
   const ar = getAspectRatio();
   const ptr = ubur.get_visible_sphere_ids(ar, viewX, viewY, viewArea);
@@ -180,6 +178,14 @@ function draw() {
     const y = ubur.get_sphere_y(ids[i]);
     const r = ubur.get_sphere_r(ids[i]);
     const color = ubur.get_sphere_color(ids[i]);
+    const name = ubur.get_sphere_name(ids[i]);
+
+    if (name) {
+      drawName(x, y, r, FAKE_PLAYER_NAMES[name]);
+    }
+
+    // console.log(name === undefined ? "" : FAKE_PLAYER_NAMES[name]);
+
     const d = r * 2;
 
     setCircle(true);
@@ -213,7 +219,14 @@ async function main() {
     return;
   }
 
-  if (!initGraphics(gl, vertexShaderSource, fragmentShaderSource)) {
+  const context = nameCanvas.getContext("2d");
+
+  if (!context) {
+    alert("Canvas is not supported! Go update your browser!");
+    return;
+  }
+
+  if (!initGraphics(gl, vertexShaderSource, fragmentShaderSource, context)) {
     return;
   }
 
@@ -237,7 +250,8 @@ async function main() {
   playButton.addEventListener("click", () => {
     titleUI.style.display = "none";
 
-    const ptr = ubur.register_player();
+    playerName = nameInput.value || "Anon";
+    const ptr = ubur.register_player(playerName);
     const r = new Uint32Array(memory.buffer, ptr, 2);
 
     playerId = r[0];

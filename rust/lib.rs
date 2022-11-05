@@ -34,8 +34,8 @@ impl Ubur {
         self.world.update(dt)
     }
 
-    pub fn register_player(&mut self) -> *const usize {
-        let (id, uid) = self.world.spawn_player();
+    pub fn register_player(&mut self, name: String) -> *const usize {
+        let (id, uid) = self.world.spawn_player(name);
         let r = vec![id, uid];
 
         // log(&format!("{:?}", r));
@@ -57,6 +57,13 @@ impl Ubur {
 
     pub fn get_sphere_color(&self, id: usize) -> u32 {
         self.world.spheres.get(id).color
+    }
+
+    pub fn get_sphere_name(&self, id: usize) -> Option<usize> {
+        match self.world.name_map.get(&id) {
+            Some(x) => Some(*x),
+            None => None,
+        }
     }
 
     pub fn get_sphere_ids(&mut self) -> *const usize {

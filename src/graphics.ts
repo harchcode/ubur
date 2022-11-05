@@ -7,6 +7,7 @@ import { mat3, vec2 } from "gl-matrix";
 import { setColorArr } from "./utils";
 
 let gl: WebGLRenderingContext;
+let ctx: CanvasRenderingContext2D;
 
 // We only need 1 shader program
 let program: WebGLProgram;
@@ -121,7 +122,7 @@ export function setClearColor(color: number) {
   gl.clearColor(colorArr[0], colorArr[1], colorArr[2], colorArr[3]);
 }
 
-export function initGraphics(
+function initGL(
   glContext: WebGLRenderingContext,
   vertexShaderSource: string,
   fragmentShaderSource: string
@@ -138,7 +139,7 @@ export function initGraphics(
     gl.FRAGMENT_SHADER,
     fragmentShaderSource
   );
-  if (!vertexShader || !fragmentShader) return;
+  if (!vertexShader || !fragmentShader) return false;
 
   const _program = createProgram(gl, vertexShader, fragmentShader);
   if (!_program) {
@@ -163,6 +164,28 @@ export function initGraphics(
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
 
   setViewPos(0, 0);
+
+  return true;
+}
+
+function initNameCanvas(nameContext: CanvasRenderingContext2D) {
+  ctx = nameContext;
+
+  return true;
+}
+
+export function initGraphics(
+  glContext: WebGLRenderingContext,
+  vertexShaderSource: string,
+  fragmentShaderSource: string,
+  nameContext: CanvasRenderingContext2D
+) {
+  if (!initGL(glContext, vertexShaderSource, fragmentShaderSource)) {
+    return false;
+  }
+
+  initNameCanvas(nameContext);
+
   resizeGraphics();
 
   return true;
@@ -182,6 +205,10 @@ export function resizeGraphics() {
   mat3.projection(projectionMatrix, canvas.width, canvas.height);
   setViewSize(viewArea);
   setViewPos(viewX, viewY);
+
+  const nameCanvas = ctx.canvas;
+  nameCanvas.width = displayWidth;
+  nameCanvas.height = displayHeight;
 }
 
 export function resizeGraphicsIfNeeded() {
@@ -200,7 +227,20 @@ export function resizeGraphicsIfNeeded() {
   return needResize;
 }
 
+const textAlign = "center";
+const textBaseline = "middle";
+const font = "16px sans-serif";
+
 export function beginDraw() {
+  // set text align and baseline
+  // somehow it got reset back when the canvas got resized.
+  ctx.textAlign = textAlign;
+  ctx.textBaseline = textBaseline;
+  ctx.font = font;
+
+  // Clear name canvas
+  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
   // Clear the canvas.
   gl.clear(gl.COLOR_BUFFER_BIT);
 
@@ -251,4 +291,27 @@ export function drawRect(x: number, y: number, width: number, height: number) {
 
 export function setCircle(isCircle: boolean) {
   gl.uniform1i(circleLocation, isCircle ? 1 : 0);
+}
+
+const textColor = "#000";
+const textOutlineColor = "#fff";
+
+export function drawName(x: number, y: number, r: number, name: string) {
+  const _r = Math.max(r, 10.0);
+
+  const textScale = (_r / 25) * viewScaleVec[0];
+  const oneOverTextScale = 1 / textScale;
+  ctx.scale(textScale, textScale);
+  const ax =
+    ((x - viewX) * viewScaleVec[0] + ctx.canvas.width * 0.5) * oneOverTextScale;
+  const ay =
+    ((y - viewY) * viewScaleVec[1] + ctx.canvas.height * 0.5) *
+    oneOverTextScale;
+
+  ctx.strokeStyle = textOutlineColor;
+  ctx.fillStyle = textColor;
+
+  ctx.strokeText(name, ax, ay);
+  ctx.fillText(name, ax, ay);
+  ctx.scale(oneOverTextScale, oneOverTextScale);
 }
