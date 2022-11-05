@@ -50,140 +50,141 @@
     <canvas id="name-canvas" class="full"></canvas>
 
     <div
-      id="title-ui"
-      class="full"
       style="
-        display: none;
-        flex-direction: column;
+        display: flex;
+        width: 100%;
+        height: 100%;
         align-items: center;
         justify-content: center;
       "
     >
       <div
+        id="title-ui"
         style="
-          font-size: 8rem;
-          font-weight: bold;
-          letter-spacing: 0.1em;
-          color: white;
-          -webkit-text-stroke: 2px black;
+          position: absolute;
+          width: 640px;
+          height: 960px;
+          display: none;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          transform-origin: center;
         "
       >
-        Ubur.io
-      </div>
-      <div style="width: 30rem">
-        <div style="background: white; padding: 1rem">
-          <input
-            id="name-input"
-            type="text"
-            placeholder="Enter your name"
-            maxlength="15"
+        <div
+          style="
+            font-size: 8rem;
+            font-weight: bold;
+            letter-spacing: 0.1em;
+            color: white;
+            -webkit-text-stroke: 2px black;
+          "
+        >
+          Ubur.io
+        </div>
+        <div style="width: 100%; padding: 2rem">
+          <div style="background: white; padding: 1rem">
+            <input
+              id="name-input"
+              type="text"
+              placeholder="Enter your name"
+              maxlength="15"
+              style="
+                width: 100%;
+                font-size: 2rem;
+                padding: 1rem;
+                text-align: center;
+                letter-spacing: 0.1em;
+                border: none;
+                border-bottom: 2px solid black;
+                font-weight: bold;
+                outline: 0;
+                background: transparent;
+              "
+            />
+          </div>
+          <div
             style="
-              width: 100%;
-              font-size: 2rem;
+              margin-top: 2rem;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            "
+          >
+            <button
+              id="play-button"
+              type="button"
+              style="
+                display: block;
+                width: 100%;
+                padding: 1rem;
+                font-size: 2.5rem;
+                cursor: pointer;
+                border: 2px solid black;
+                background: white;
+                letter-spacing: 0.1em;
+              "
+            >
+              Play
+            </button>
+          </div>
+          <div
+            style="
+              margin-top: 2rem;
+              background: white;
+              border: 2px solid black;
               padding: 1rem;
-              text-align: center;
-              letter-spacing: 0.1em;
-              border: none;
-              border-bottom: 2px solid black;
-              font-weight: bold;
-              outline: 0;
-              background: transparent;
-            "
-          />
-        </div>
-        <div
-          style="
-            margin-top: 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-          "
-        >
-          <button
-            id="play-button"
-            type="button"
-            style="
-              display: block;
-              width: 10rem;
-              height: 4rem;
-              font-size: 1.75rem;
-              cursor: pointer;
-              border: 2px solid black;
-              background: white;
-              letter-spacing: 0.1em;
+              border-radius: 1rem;
             "
           >
-            Play
-          </button>
-          <button
-            type="button"
-            style="
-              display: block;
-              margin-left: 1rem;
-              width: 4rem;
-              height: 4rem;
-              font-size: 1.75rem;
-              cursor: pointer;
-              border: 2px solid black;
-              border-radius: 100%;
-              background: white;
-            "
-          >
-            ?
-          </button>
-        </div>
-        <div
-          style="
-            margin-top: 2rem;
-            background: white;
-            border: 2px solid black;
-            padding: 1rem;
-            border-radius: 1rem;
-          "
-        >
-          <h3
-            style="
-              width: 100%;
-              text-align: center;
-              margin: 0;
-              padding: 0;
-              font-size: 1.2rem;
-              letter-spacing: 0.1em;
-            "
-          >
-            How to play:
-          </h3>
-          <ul
-            style="
-              margin-top: 1rem;
-              padding-left: 0;
-              line-height: 1.5;
-              letter-spacing: 0.05em;
-              list-style-type: none;
-            "
-          >
-            <li style="display: flex; align-items: center">
-              <div style="color: green; font-size: 1.5rem">&#9889;</div>
-              <div style="margin-left: 1rem">
-                Click anywhere on the screen to shoot. You will move to the
-                direction opposite of where you shot.
-              </div>
-            </li>
-            <li style="margin-top: 0.5rem; display: flex; align-items: center">
-              <div style="color: green; font-size: 1.5rem">&#9939;</div>
-              <div style="margin-left: 1rem">
-                If 2 players collide, the bigger one will absorb the smaller
-                one.
-              </div>
-            </li>
-            <li style="margin-top: 0.5rem; display: flex; align-items: center">
-              <div style="color: green; font-size: 1.5rem">&#9899;</div>
-              <div style="margin-left: 1rem">
-                Beware of the black circles. They can absord anyone touching
-                them.
-              </div>
-            </li>
-          </ul>
+            <h3
+              style="
+                width: 100%;
+                text-align: center;
+                margin: 0;
+                padding: 0;
+                font-size: 1.2rem;
+                letter-spacing: 0.1em;
+              "
+            >
+              How to play
+            </h3>
+            <ul
+              style="
+                margin-top: 1rem;
+                padding-left: 0;
+                line-height: 1.5;
+                letter-spacing: 0.05em;
+                list-style-type: none;
+              "
+            >
+              <li style="display: flex; align-items: center">
+                <div style="color: green; font-size: 1.5rem">&#9889;</div>
+                <div style="margin-left: 1rem">
+                  Click anywhere on the screen to shoot. You will move to the
+                  direction opposite of where you shot.
+                </div>
+              </li>
+              <li
+                style="margin-top: 0.5rem; display: flex; align-items: center"
+              >
+                <div style="color: green; font-size: 1.5rem">&#9939;</div>
+                <div style="margin-left: 1rem">
+                  If 2 players collide, the bigger one will absorb the smaller
+                  one.
+                </div>
+              </li>
+              <li
+                style="margin-top: 0.5rem; display: flex; align-items: center"
+              >
+                <div style="color: green; font-size: 1.5rem">&#9899;</div>
+                <div style="margin-left: 1rem">
+                  Beware of the black circles. They can absord anyone touching
+                  them.
+                </div>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>

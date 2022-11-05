@@ -208,7 +208,27 @@ function handleShoot(ev: MouseEvent) {
   ubur.shoot(playerId, x, y);
 }
 
+const ow = 640;
+const oh = 960;
+const ar = ow / oh;
+
+function resizeUI() {
+  const ww = window.innerWidth;
+  const wh = window.innerHeight;
+  const war = ww / wh;
+
+  const scale = ar > war ? ww / ow : wh / oh;
+
+  titleUI.style.transform = `scale(${scale}, ${scale})`;
+}
+
 async function main() {
+  resizeUI();
+
+  window.addEventListener("resize", () => {
+    resizeUI();
+  });
+
   const wasm = await init();
   memory = wasm.memory;
 
