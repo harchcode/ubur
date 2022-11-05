@@ -70,9 +70,6 @@ function drawBackground() {
   const h = Math.sqrt(viewArea / ar);
   const w = ar * h;
 
-  setViewSize(viewArea);
-  setViewPos(viewX, viewY);
-
   const left = viewX - w * 0.5;
   const right = viewX + w * 0.5;
   const top = viewY - h * 0.5;
@@ -159,6 +156,9 @@ function drawPlayer() {
 
 function draw() {
   resizeGraphicsIfNeeded();
+
+  setViewSize(viewArea);
+  setViewPos(viewX, viewY);
 
   beginDraw();
 
