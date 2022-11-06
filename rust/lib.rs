@@ -136,4 +136,14 @@ impl Ubur {
 
         return s.r <= 0.0 || s.uid != uid;
     }
+
+    pub fn get_top_5_player_ids(&mut self) -> *const usize {
+        let r = &self.world.highscore_player_ids[0..5];
+
+        return r.as_ptr();
+    }
+
+    pub fn get_sphere_rank(&mut self, id: usize) -> usize {
+        return *self.world.player_ranking_map.get(&id).unwrap_or(&0);
+    }
 }

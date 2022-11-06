@@ -27,6 +27,9 @@ pub struct World {
     // mapping the name of spheres, for now
     // just use index for fake name
     pub name_map: HashMap<usize, usize>,
+
+    pub highscore_player_ids: Vec<usize>,
+    pub player_ranking_map: HashMap<usize, usize>,
 }
 
 impl World {
@@ -39,6 +42,8 @@ impl World {
             is_fake_player_map: HashMap::new(),
             current_uid: 0,
             name_map: HashMap::new(),
+            highscore_player_ids: vec![],
+            player_ranking_map: HashMap::new(),
         }
     }
 
@@ -116,6 +121,43 @@ impl World {
 
         // check collisions
         self.check_collision();
+
+        // update high scores
+        self.highscore_player_ids.clear();
+
+        for id in self.spheres.alive_ids.iter() {
+            let s1 = &self.spheres.objs[*id];
+
+            if s1.r#type != SphereType::PLAYER {
+                continue;
+            }
+
+            if self.highscore_player_ids.len() == 0 {
+                self.highscore_player_ids.push(*id);
+                continue;
+            }
+
+            let mut start = 0;
+            let mut end = (self.highscore_player_ids.len() - 1) as i32;
+
+            while start <= end {
+                let mid = (start + end) / 2;
+                let s2 = &self.spheres.get(self.highscore_player_ids[mid as usize]);
+
+                if s1.r > s2.r {
+                    end = mid - 1
+                } else {
+                    start = mid + 1;
+                }
+            }
+
+            self.highscore_player_ids.insert(start as usize, *id);
+        }
+
+        for i in 0..self.highscore_player_ids.len() {
+            self.player_ranking_map
+                .insert(self.highscore_player_ids[i], i + 1);
+        }
 
         // free spheres, or respawn fake player
         for i in 0..self.spheres.alive_ids.len() {
@@ -241,7 +283,7 @@ impl World {
 
         let color = rand_color(SPHERE_COLOR_MIN, SPHERE_COLOR_MAX);
 
-        let speed = rand(1.0, MAX_SPHERE_SPEED * 0.9);
+        let speed = rand(1.0, MAX_SPHERE_SPEED * 0.5);
         let dirx = rand(0.0, 1.0);
         let diry = f64::sqrt(1.0 - dirx);
 
@@ -286,7 +328,7 @@ impl World {
         prev.y = y;
         prev.color = rand_color(SPHERE_COLOR_MIN, SPHERE_COLOR_MAX);
 
-        let speed = rand(1.0, MAX_SPHERE_SPEED * 0.9);
+        let speed = rand(1.0, MAX_SPHERE_SPEED * 0.5);
         let dirx = rand(0.0, 1.0);
         let diry = f64::sqrt(1.0 - dirx);
 

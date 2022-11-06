@@ -3,6 +3,7 @@ import {
   beginDraw,
   drawName,
   drawRect,
+  drawScore,
   getAspectRatio,
   initGraphics,
   resizeGraphicsIfNeeded,
@@ -152,6 +153,7 @@ function drawPlayer() {
   drawRect(x, y, d, d);
 
   drawName(x, y, r, playerName);
+  drawScore((r * 1000) | 0);
 }
 
 function draw() {
@@ -183,8 +185,6 @@ function draw() {
     if (name) {
       drawName(x, y, r, FAKE_PLAYER_NAMES[name]);
     }
-
-    // console.log(name === undefined ? "" : FAKE_PLAYER_NAMES[name]);
 
     const d = r * 2;
 

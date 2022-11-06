@@ -230,6 +230,8 @@ export function resizeGraphicsIfNeeded() {
 const textAlign = "center";
 const textBaseline = "middle";
 const font = "16px sans-serif";
+const textColor = "#000";
+const textOutlineColor = "#fff";
 
 export function beginDraw() {
   // set text align and baseline
@@ -237,6 +239,8 @@ export function beginDraw() {
   ctx.textAlign = textAlign;
   ctx.textBaseline = textBaseline;
   ctx.font = font;
+  ctx.strokeStyle = textOutlineColor;
+  ctx.fillStyle = textColor;
 
   // Clear name canvas
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -293,27 +297,46 @@ export function setCircle(isCircle: boolean) {
   gl.uniform1i(circleLocation, isCircle ? 1 : 0);
 }
 
-const textColor = "#000";
-const textOutlineColor = "#fff";
-
 export function drawName(x: number, y: number, r: number, name: string) {
   const _r = Math.max(r, 10.0);
-
   const textScale = (_r / 25) * viewScaleVec[0];
   const oneOverTextScale = 1 / textScale;
-
-  ctx.scale(textScale, textScale);
-
+  ctx.setTransform(textScale, 0, 0, textScale, 0, 0);
+  // ctx.scale(textScale, textScale);
   const ax =
     ((x - viewX) * viewScaleVec[0] + ctx.canvas.width * 0.5) * oneOverTextScale;
   const ay =
     ((y - viewY) * viewScaleVec[1] + ctx.canvas.height * 0.5) *
     oneOverTextScale;
-
-  ctx.strokeStyle = textOutlineColor;
-  ctx.fillStyle = textColor;
-
   ctx.strokeText(name, ax, ay);
   ctx.fillText(name, ax, ay);
-  ctx.scale(oneOverTextScale, oneOverTextScale);
+  // ctx.scale(oneOverTextScale, oneOverTextScale);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+}
+
+const scoreTextAlign = "left";
+const scoreBaseline = "bottom";
+const scoreText = "Score: ";
+const scoreScale = 2.0;
+const scoreOneOverScale = 1 / scoreScale;
+
+export function drawScore(score: number) {
+  const s = score.toString();
+
+  const sx = 16 * scoreOneOverScale;
+  const zx = sx + 56;
+  const y = (ctx.canvas.height - 8) * scoreOneOverScale;
+
+  ctx.setTransform(scoreScale, 0, 0, scoreScale, 0, 0);
+
+  ctx.textAlign = scoreTextAlign;
+  ctx.textBaseline = scoreBaseline;
+
+  ctx.strokeText(scoreText, sx, y);
+  ctx.fillText(scoreText, sx, y);
+
+  ctx.strokeText(s, zx, y);
+  ctx.fillText(s, zx, y);
+
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
 }
