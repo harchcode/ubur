@@ -232,6 +232,7 @@ const textBaseline = "middle";
 const font = "16px sans-serif";
 const textColor = "#000";
 const textOutlineColor = "#fff";
+const lineWidth = 2;
 
 export function beginDraw() {
   // set text align and baseline
@@ -241,6 +242,7 @@ export function beginDraw() {
   ctx.font = font;
   ctx.strokeStyle = textOutlineColor;
   ctx.fillStyle = textColor;
+  ctx.lineWidth = lineWidth;
 
   // Clear name canvas
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -339,4 +341,81 @@ export function drawScore(score: number) {
   ctx.fillText(s, zx, y);
 
   ctx.setTransform(1, 0, 0, 1, 0, 0);
+}
+
+const hsScoreTextAlign = "right";
+const hsRankTextAlign = "left";
+const hsBaseline = "bottom";
+const hsScales = [1.4, 1.2, 1.2, 1.0, 1.0, 1.0];
+const hsNameOffset = 256;
+const hsRankOffset = hsNameOffset + 40;
+const hsLineHeight = 24;
+const hsColors = ["#dc2626", "#2563eb", "#ca8a04", "black", "black", "black"];
+const hsLineColors = ["white", "white", "white", "white", "white", "white"];
+const top3Font = "bold 16px sans-serif";
+const hsHighlightColor = "#0002";
+
+export function drawHighscores(
+  names: string[],
+  highScores: number[],
+  playerName: string,
+  playerRank: number,
+  playerScore: number
+) {
+  ctx.textBaseline = hsBaseline;
+
+  let ay = 0;
+
+  for (let i = 0; i < 6; i++) {
+    if (i === 5 && playerRank <= 5) break;
+
+    const rank = i === 5 ? playerRank.toString() : (i + 1).toString();
+    const score = i === 5 ? playerScore.toString() : highScores[i].toString();
+    const name = i === 5 ? playerName : names[i];
+
+    const scale = hsScales[i];
+    const oneOverScale = 1 / scale;
+
+    ctx.setTransform(scale, 0, 0, scale, 0, 0);
+
+    const x = (ctx.canvas.width - 16) * oneOverScale;
+    ay += hsLineHeight * scale;
+    const y = (ay + 48) * oneOverScale;
+    // const y = (i * 24 + 48) * oneOverScale;
+
+    if (playerRank - 1 === i || i === 5) {
+      ctx.fillStyle = hsHighlightColor;
+
+      ctx.fillRect(
+        x - (hsRankOffset + 8) * oneOverScale,
+        y - 20,
+        312 * oneOverScale,
+        24
+      );
+    }
+
+    ctx.font = i < 3 ? top3Font : font;
+    ctx.fillStyle = hsColors[i];
+    ctx.strokeStyle = hsLineColors[i];
+    ctx.lineWidth = 2 * scale;
+
+    ctx.textAlign = hsRankTextAlign;
+    ctx.strokeText(rank, x - hsRankOffset * oneOverScale, y);
+    ctx.fillText(rank, x - hsRankOffset * oneOverScale, y);
+
+    // ctx.fillRect(x - hsNameOffset * oneOverScale, y, 160 * oneOverScale, 24);
+    ctx.strokeText(
+      name,
+      x - hsNameOffset * oneOverScale,
+      y,
+      160 * oneOverScale
+    );
+    ctx.fillText(name, x - hsNameOffset * oneOverScale, y, 160 * oneOverScale);
+
+    ctx.textAlign = hsScoreTextAlign;
+    ctx.strokeText(score, x, y);
+    ctx.fillText(score, x, y);
+
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+  }
 }

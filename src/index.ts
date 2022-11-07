@@ -1,6 +1,7 @@
 import init, { Ubur } from "../pkg/ubur";
 import {
   beginDraw,
+  drawHighscores,
   drawName,
   drawRect,
   drawScore,
@@ -153,8 +154,11 @@ function drawPlayer() {
   drawRect(x, y, d, d);
 
   drawName(x, y, r, playerName);
-  drawScore((r * 1000) | 0);
 }
+
+const hsScores: number[] = [];
+const hsNames: string[] = [];
+const emptyName = "-";
 
 function draw() {
   resizeGraphicsIfNeeded();
@@ -194,6 +198,41 @@ function draw() {
   }
 
   drawPlayer();
+
+  // draw scores
+  const playerScore = playerId ? ubur.get_sphere_score(playerId) : 0;
+
+  if (playerId !== undefined) {
+    drawScore(playerScore);
+  }
+
+  const hsptr = ubur.get_top_5_player_ids();
+  const hslen = new Uint32Array(memory.buffer, hsptr, 1)[0];
+  const hsids = new Uint32Array(memory.buffer, hsptr + 4, hslen);
+
+  for (let i = 0; i < hslen; i++) {
+    const id = hsids[i];
+
+    hsScores[i] = ubur.get_sphere_score(id);
+
+    if (id === playerId) {
+      hsNames[i] = playerName;
+    } else {
+      const nameIndex = ubur.get_sphere_name(id);
+
+      hsNames[i] =
+        nameIndex === undefined ? emptyName : FAKE_PLAYER_NAMES[nameIndex];
+    }
+  }
+
+  for (let i = hslen; i < 5; i++) {
+    hsScores[i] = 0;
+    hsNames[i] = emptyName;
+  }
+
+  const playerRank = playerId ? ubur.get_sphere_rank(playerId) : 0;
+
+  drawHighscores(hsNames, hsScores, playerName, playerRank, playerScore);
 }
 
 function handleShoot(ev: MouseEvent) {

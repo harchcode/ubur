@@ -55,6 +55,14 @@ impl Ubur {
         self.world.spheres.get(id).r
     }
 
+    pub fn get_sphere_score(&self, id: usize) -> usize {
+        let r = self.world.spheres.get(id).r;
+
+        // return area, but instead of using std::f64::consts::PI i used 4.0
+        // so the max radius of 250 will have max score of 250000
+        f64::trunc(4.0 * r * r) as usize
+    }
+
     pub fn get_sphere_color(&self, id: usize) -> u32 {
         self.world.spheres.get(id).color
     }
@@ -138,7 +146,14 @@ impl Ubur {
     }
 
     pub fn get_top_5_player_ids(&mut self) -> *const usize {
-        let r = &self.world.highscore_player_ids[0..5];
+        let mut r = Vec::with_capacity(5);
+        let len = usize::min(self.world.highscore_player_ids.len(), 5);
+
+        r.push(len);
+
+        for i in 0..len {
+            r.push(self.world.highscore_player_ids[i]);
+        }
 
         return r.as_ptr();
     }
