@@ -1,5 +1,8 @@
+extern crate wee_alloc;
+
 pub mod constants;
 pub mod pool;
+pub mod quad_tree;
 pub mod sphere;
 pub mod utils;
 pub mod world;
@@ -8,6 +11,15 @@ use crate::constants::WORLD_SIZE;
 use crate::utils::log;
 use wasm_bindgen::prelude::*;
 use world::World;
+
+// When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
+// allocator.
+#[cfg(feature = "wee_alloc")]
+#[global_allocator]
+static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+
+#[wasm_bindgen]
+pub struct RegisterPlayerResponse(pub usize, pub usize);
 
 #[wasm_bindgen]
 pub struct Ubur {
@@ -34,13 +46,13 @@ impl Ubur {
         self.world.update(dt)
     }
 
-    pub fn register_player(&mut self, name: String) -> *const usize {
+    pub fn register_player(&mut self, name: String) -> RegisterPlayerResponse {
         let (id, uid) = self.world.spawn_player(name);
-        let r = vec![id, uid];
+        // let r = [id, uid];
 
         // log(&format!("{:?}", r));
 
-        return r.as_ptr();
+        return RegisterPlayerResponse(id, uid);
     }
 
     pub fn get_sphere_x(&self, id: usize) -> f64 {

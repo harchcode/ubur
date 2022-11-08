@@ -8,6 +8,7 @@ use crate::{
         STARTING_PLAYER_R_RANDOMNESS, WORLD_SIZE,
     },
     pool::Pool,
+    quad_tree::IdQuadTree,
     sphere::{Sphere, SphereType},
     utils::{darken_color, log, rand, rand_color, rand_int},
 };
@@ -23,6 +24,7 @@ pub struct World {
     am_spawn_counter: f64,
     is_fake_player_map: HashMap<usize, bool>,
     current_uid: usize,
+    qt: IdQuadTree,
 
     // mapping the name of spheres, for now
     // just use index for fake name
@@ -44,6 +46,7 @@ impl World {
             name_map: HashMap::new(),
             highscore_player_ids: vec![],
             player_ranking_map: HashMap::new(),
+            qt: IdQuadTree::new(0.0, 0.0, WORLD_SIZE, WORLD_SIZE),
         }
     }
 
@@ -111,12 +114,20 @@ impl World {
         self.commands.clear();
 
         // updates
+        self.qt.clear();
         self.spheres.update();
 
         for id in self.spheres.alive_ids.iter() {
             let sphere = &mut self.spheres.objs[*id];
 
             sphere.update(dt);
+            self.qt.insert(
+                *id,
+                sphere.x - sphere.r,
+                sphere.y - sphere.r,
+                sphere.r * 2.0,
+                sphere.r * 2.0,
+            );
         }
 
         // check collisions
@@ -382,12 +393,24 @@ impl World {
         let n = self.spheres.alive_ids.len();
 
         for i in 0..(n - 1) {
-            for j in (i + 1)..n {
-                let id1 = self.spheres.alive_ids[i];
-                let id2 = self.spheres.alive_ids[j];
+            let id1 = self.spheres.alive_ids[i];
+            let s1 = &self.spheres.objs[id1];
+
+            let other_ids =
+                self.qt
+                    .get_data_in_region(s1.x - s1.r, s1.y - s1.r, s1.r * 2.0, s1.r * 2.0);
+
+            // log(&format!("{}", other_ids.len()));
+
+            for j in &other_ids {
+                let id2 = *j;
 
                 let s1 = &self.spheres.objs[id1];
                 let s2 = &self.spheres.objs[id2];
+
+                if id1 == id2 {
+                    continue;
+                }
 
                 if s1.shooter_id == Some(id2) || s2.shooter_id == Some(id1) {
                     continue;

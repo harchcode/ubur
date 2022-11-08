@@ -14,7 +14,6 @@ pub enum SphereType {
     BULLET = 3,
 }
 
-thread_local!(static MONSTER_ID: Cell<usize> = Cell::new(1));
 #[derive(PartialEq, Clone, Copy)]
 pub struct Sphere {
     pub x: f64,

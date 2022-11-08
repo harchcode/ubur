@@ -26,6 +26,7 @@ const nameCanvas = document.getElementById("name-canvas") as HTMLCanvasElement;
 const titleUI = document.getElementById("title-ui") as HTMLCanvasElement;
 const playButton = document.getElementById("play-button") as HTMLButtonElement;
 const nameInput = document.getElementById("name-input") as HTMLInputElement;
+const hsButton = document.getElementById("hs-button") as HTMLButtonElement;
 
 let memory: WebAssembly.Memory;
 let ubur: Ubur;
@@ -35,6 +36,7 @@ let playerName = "";
 let viewX: number;
 let viewY: number;
 let viewArea: number;
+let showHighscore = false;
 
 function update(dt: number) {
   ubur.update(dt);
@@ -54,7 +56,7 @@ function update(dt: number) {
   }
 }
 
-const BG_CELLS_PER_ROW = 5;
+const BG_CELLS_PER_ROW = 10;
 const BG_COLOR = 0xd8e3e7;
 const CLEAR_COLOR = 0x51c4d3;
 const GRID_LINE_COLOR = 0x126e82;
@@ -206,6 +208,8 @@ function draw() {
     drawScore(playerScore);
   }
 
+  if (!showHighscore) return;
+
   const hsptr = ubur.get_top_5_player_ids();
   const hslen = new Uint32Array(memory.buffer, hsptr, 1)[0];
   const hsids = new Uint32Array(memory.buffer, hsptr + 4, hslen);
@@ -270,6 +274,7 @@ async function main() {
 
   const wasm = await init();
   memory = wasm.memory;
+  // console.log(memory.buffer);
 
   const gl = worldCanvas.getContext("webgl");
 
@@ -304,20 +309,37 @@ async function main() {
   ubur = Ubur.new();
   ubur.init();
 
+  nameInput.value = localStorage.getItem("player-name") || "";
   titleUI.style.display = "flex";
 
-  playButton.addEventListener("click", () => {
+  playButton.addEventListener("click", e => {
     titleUI.style.display = "none";
+    localStorage.setItem("player-name", nameInput.value);
 
     playerName = nameInput.value || "Anon";
-    const ptr = ubur.register_player(playerName);
-    const r = new Uint32Array(memory.buffer, ptr, 2);
+    const r = ubur.register_player(playerName);
 
     playerId = r[0];
     playerUid = r[1];
+
+    e.stopPropagation();
+    e.preventDefault();
+    e.stopImmediatePropagation();
   });
 
-  window.addEventListener("mousedown", handleShoot);
+  window.addEventListener("click", handleShoot);
+
+  hsButton.addEventListener("click", e => {
+    showHighscore = !showHighscore;
+
+    if (!playerId) {
+      titleUI.style.display = showHighscore ? "none" : "flex";
+    }
+
+    e.stopPropagation();
+    e.preventDefault();
+    e.stopImmediatePropagation();
+  });
 
   const loop = new GameLoop(update, draw);
   loop.start();
