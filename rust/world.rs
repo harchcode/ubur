@@ -23,16 +23,9 @@ pub struct World {
     pub commands: Vec<Command>,
     food_spawn_counter: f64,
     am_spawn_counter: f64,
-    is_fake_player_map: HashMap<usize, bool>,
     current_uid: usize,
     qt: IdQuadTree,
-
-    // mapping the name of spheres, for now
-    // just use index for fake name
-    pub name_map: HashMap<usize, usize>,
-
     pub highscore_player_ids: Vec<usize>,
-    pub player_ranking_map: HashMap<usize, usize>,
 }
 
 impl World {
@@ -43,11 +36,8 @@ impl World {
             commands: vec![],
             food_spawn_counter: 0.0,
             am_spawn_counter: 0.0,
-            is_fake_player_map: HashMap::new(),
             current_uid: 0,
-            name_map: HashMap::new(),
             highscore_player_ids: Vec::with_capacity(120),
-            player_ranking_map: HashMap::new(),
             qt: IdQuadTree::new(0.0, 0.0, WORLD_SIZE, WORLD_SIZE),
         }
     }
@@ -63,7 +53,6 @@ impl World {
 
         for _ in 0..99 {
             let id = self.spawn_fake_player();
-            self.is_fake_player_map.insert(id, true);
         }
     }
 
@@ -175,8 +164,24 @@ impl World {
         }
 
         for i in 0..self.highscore_player_ids.len() {
-            self.player_ranking_map
-                .insert(self.highscore_player_ids[i], i + 1);
+            let sp = self.spheres.get_mut(self.highscore_player_ids[i]);
+
+            match sp.r#type {
+                SphereType::PLAYER {
+                    name,
+                    shoot_delay,
+                    is_fake,
+                    rank,
+                } => {
+                    sp.r#type = SphereType::PLAYER {
+                        name,
+                        shoot_delay,
+                        is_fake,
+                        rank: i + 1,
+                    }
+                }
+                _ => {}
+            }
         }
 
         // free spheres, or respawn fake player
@@ -192,7 +197,7 @@ impl World {
                         is_fake,
                         rank,
                     } => {
-                        if *self.is_fake_player_map.get(&id).unwrap_or(&false) {
+                        if is_fake {
                             self.respawn_fake_player(id)
                         }
                     }
@@ -351,9 +356,6 @@ impl World {
         );
         self.increment_uid();
 
-        self.name_map
-            .insert(id, rand_int(0, FAKE_NAME_LEN as i32) as usize);
-
         return id;
     }
 
@@ -382,13 +384,6 @@ impl World {
         prev.y = y;
         prev.color = rand_color(SPHERE_COLOR_MIN, SPHERE_COLOR_MAX);
 
-        prev.r#type = SphereType::PLAYER {
-            name: rand_int(0, FAKE_NAME_LEN as i32) as usize,
-            shoot_delay: SHOOT_DELAY,
-            is_fake: true,
-            rank: 0,
-        };
-
         let speed = rand(1.0, MAX_SPHERE_SPEED * 0.5);
         let dirx = rand(0.0, 1.0);
         let diry = f64::sqrt(1.0 - dirx);
@@ -400,8 +395,12 @@ impl World {
         prev.vy = diry * speed * sy;
 
         if rand_int(0, 100) >= 90 {
-            self.name_map
-                .insert(id, rand_int(0, FAKE_NAME_LEN as i32) as usize);
+            prev.r#type = SphereType::PLAYER {
+                name: rand_int(0, FAKE_NAME_LEN as i32) as usize,
+                shoot_delay: SHOOT_DELAY,
+                is_fake: true,
+                rank: 0,
+            };
         }
     }
 
