@@ -248,14 +248,14 @@ function handleShoot(ev: MouseEvent) {
   ubur.shoot(playerId, x, y);
 }
 
-const ow = 640;
-const oh = 960;
-const ar = ow / oh;
-
 function resizeUI() {
   const ww = window.innerWidth;
   const wh = window.innerHeight;
   const war = ww / wh;
+
+  const ow = titleUI.clientWidth;
+  const oh = titleUI.clientHeight;
+  const ar = ow / oh;
 
   const scale = ar > war ? ww / ow : wh / oh;
 
@@ -305,7 +305,6 @@ async function main() {
   ubur.init();
 
   nameInput.value = localStorage.getItem("player-name") || "";
-  titleUI.style.display = "flex";
 
   playButton.addEventListener("click", e => {
     titleUI.style.display = "none";
