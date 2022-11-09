@@ -86,14 +86,14 @@ impl Ubur {
         }
     }
 
-    pub fn get_sphere_ids(&mut self) -> *const usize {
-        self.world.spheres.update();
+    // pub fn get_sphere_ids(&mut self) -> *const usize {
+    //     self.world.spheres.update();
 
-        let mut r = self.world.spheres.alive_ids.clone();
-        r.insert(0, r.len());
+    //     let mut r = self.world.spheres.alive_ids.clone();
+    //     r.insert(0, r.len());
 
-        return r.as_ptr();
-    }
+    //     return r.as_ptr();
+    // }
 
     pub fn get_visible_sphere_ids(
         &mut self,
@@ -101,7 +101,7 @@ impl Ubur {
         x: f64,
         y: f64,
         view_area: f64,
-    ) -> *const usize {
+    ) -> Vec<usize> {
         let h = f64::sqrt(view_area / aspect_ratio);
         let w = aspect_ratio * h;
 
@@ -110,11 +110,9 @@ impl Ubur {
         let top = y - h * 0.5;
         let bottom = y + h * 0.5;
 
-        self.world.spheres.update();
-
         let mut r = vec![];
 
-        for id in self.world.spheres.alive_ids.iter() {
+        for id in self.world.sphere_ids.iter() {
             let sphere = self.world.spheres.get(*id);
 
             if sphere.x + sphere.r > left
@@ -126,26 +124,24 @@ impl Ubur {
             }
         }
 
-        r.insert(0, r.len());
-
-        return r.as_ptr();
+        return r;
     }
 
     pub fn get_sphere_view_area(&self, id: usize) -> f64 {
         self.world.spheres.get(id).r * 2500.0 + 25000.0
     }
 
-    pub fn get_visible_sphere_ids_of_sphere(
-        &mut self,
-        id: usize,
-        aspect_ratio: f64,
-    ) -> *const usize {
-        let s = self.world.spheres.get(id);
-        let (x, y) = (s.x, s.y);
-        let view_area = self.get_sphere_view_area(id);
+    // pub fn get_visible_sphere_ids_of_sphere(
+    //     &mut self,
+    //     id: usize,
+    //     aspect_ratio: f64,
+    // ) -> *const usize {
+    //     let s = self.world.spheres.get(id);
+    //     let (x, y) = (s.x, s.y);
+    //     let view_area = self.get_sphere_view_area(id);
 
-        return self.get_visible_sphere_ids(aspect_ratio, x, y, view_area);
-    }
+    //     return self.get_visible_sphere_ids(aspect_ratio, x, y, view_area);
+    // }
 
     pub fn shoot(&mut self, id: usize, x: f64, y: f64) {
         self.world.shoot(id, x, y);
@@ -157,17 +153,15 @@ impl Ubur {
         return s.r <= 0.0 || s.uid != uid;
     }
 
-    pub fn get_top_5_player_ids(&mut self) -> *const usize {
+    pub fn get_top_5_player_ids(&mut self) -> Vec<usize> {
         let mut r = Vec::with_capacity(5);
         let len = usize::min(self.world.highscore_player_ids.len(), 5);
-
-        r.push(len);
 
         for i in 0..len {
             r.push(self.world.highscore_player_ids[i]);
         }
 
-        return r.as_ptr();
+        return r;
     }
 
     pub fn get_sphere_rank(&mut self, id: usize) -> usize {

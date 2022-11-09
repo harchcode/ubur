@@ -4,7 +4,7 @@ use crate::{
     constants::{
         AM_SPAWN_DELAY, AM_SPAWN_R_MAX, AM_SPAWN_R_MIN, BULLET_AREA_RATIO, BULLET_SPEED,
         FAKE_NAME_LEN, FOOD_SPAWN_DELAY, FOOD_SPAWN_R_MAX, FOOD_SPAWN_R_MIN, MAX_SPHERE_COUNT,
-        MAX_SPHERE_SPEED, SPHERE_COLOR_MAX, SPHERE_COLOR_MIN, STARTING_PLAYER_R,
+        MAX_SPHERE_SPEED, SHOOT_DELAY, SPHERE_COLOR_MAX, SPHERE_COLOR_MIN, STARTING_PLAYER_R,
         STARTING_PLAYER_R_RANDOMNESS, WORLD_SIZE,
     },
     pool::Pool,
@@ -19,6 +19,7 @@ pub enum Command {
 
 pub struct World {
     pub spheres: Pool<Sphere>,
+    pub sphere_ids: Vec<usize>,
     pub commands: Vec<Command>,
     food_spawn_counter: f64,
     am_spawn_counter: f64,
@@ -38,13 +39,14 @@ impl World {
     pub fn new() -> World {
         World {
             spheres: Pool::new(Sphere::zero, MAX_SPHERE_COUNT),
+            sphere_ids: Vec::with_capacity(MAX_SPHERE_COUNT),
             commands: vec![],
             food_spawn_counter: 0.0,
             am_spawn_counter: 0.0,
             is_fake_player_map: HashMap::new(),
             current_uid: 0,
             name_map: HashMap::new(),
-            highscore_player_ids: vec![],
+            highscore_player_ids: Vec::with_capacity(120),
             player_ranking_map: HashMap::new(),
             qt: IdQuadTree::new(0.0, 0.0, WORLD_SIZE, WORLD_SIZE),
         }
@@ -115,9 +117,10 @@ impl World {
 
         // updates
         self.qt.clear();
-        self.spheres.update();
 
-        for id in self.spheres.alive_ids.iter() {
+        self.sphere_ids = self.spheres.get_alive_ids();
+
+        for id in self.sphere_ids.iter() {
             let sphere = &mut self.spheres.objs[*id];
 
             sphere.update(dt);
@@ -136,11 +139,17 @@ impl World {
         // update high scores
         self.highscore_player_ids.clear();
 
-        for id in self.spheres.alive_ids.iter() {
+        for id in self.sphere_ids.iter() {
             let s1 = &self.spheres.objs[*id];
 
-            if s1.r#type != SphereType::PLAYER {
-                continue;
+            match s1.r#type {
+                SphereType::PLAYER {
+                    name,
+                    shoot_delay,
+                    is_fake,
+                    rank,
+                } => {}
+                _ => continue,
             }
 
             if self.highscore_player_ids.len() == 0 {
@@ -171,27 +180,33 @@ impl World {
         }
 
         // free spheres, or respawn fake player
-        for i in 0..self.spheres.alive_ids.len() {
-            let id = self.spheres.alive_ids[i];
+        for i in 0..self.sphere_ids.len() {
+            let id = self.sphere_ids[i];
             let sphere = &mut self.spheres.objs[id];
 
             if sphere.r <= 0.0 {
-                if sphere.r#type == SphereType::PLAYER
-                    && *self.is_fake_player_map.get(&id).unwrap_or(&false)
-                {
-                    self.respawn_fake_player(id);
-                } else {
-                    self.spheres.free(id);
+                match sphere.r#type {
+                    SphereType::PLAYER {
+                        name,
+                        shoot_delay,
+                        is_fake,
+                        rank,
+                    } => {
+                        if *self.is_fake_player_map.get(&id).unwrap_or(&false) {
+                            self.respawn_fake_player(id)
+                        }
+                    }
+                    _ => self.spheres.free(id),
                 }
             }
         }
     }
 
     fn check_spawn_collision(&self, x: f64, y: f64, r: f64) -> bool {
-        let n = self.spheres.alive_ids.len();
+        let n = self.sphere_ids.len();
 
         for i in 0..n {
-            let id = self.spheres.alive_ids[i];
+            let id = self.sphere_ids[i];
             let s = &self.spheres.objs[id];
 
             let distance_sq = (x - s.x) * (x - s.x) + (y - s.y) * (y - s.y);
@@ -267,7 +282,21 @@ impl World {
 
         let (id, sphere) = self.spheres.obtain();
         let uid = self.current_uid;
-        sphere.set(x, y, vx, vy, r, color, SphereType::PLAYER, uid);
+        sphere.set(
+            x,
+            y,
+            vx,
+            vy,
+            r,
+            color,
+            SphereType::PLAYER {
+                name: 0,
+                shoot_delay: SHOOT_DELAY,
+                is_fake: false,
+                rank: 0,
+            },
+            uid,
+        );
 
         self.increment_uid();
 
@@ -305,7 +334,21 @@ impl World {
         let vy = diry * speed * sy;
 
         let (id, sphere) = self.spheres.obtain();
-        sphere.set(x, y, vx, vy, r, color, SphereType::PLAYER, self.current_uid);
+        sphere.set(
+            x,
+            y,
+            vx,
+            vy,
+            r,
+            color,
+            SphereType::PLAYER {
+                name: rand_int(0, FAKE_NAME_LEN as i32) as usize,
+                shoot_delay: SHOOT_DELAY,
+                is_fake: true,
+                rank: 0,
+            },
+            self.current_uid,
+        );
         self.increment_uid();
 
         self.name_map
@@ -339,6 +382,13 @@ impl World {
         prev.y = y;
         prev.color = rand_color(SPHERE_COLOR_MIN, SPHERE_COLOR_MAX);
 
+        prev.r#type = SphereType::PLAYER {
+            name: rand_int(0, FAKE_NAME_LEN as i32) as usize,
+            shoot_delay: SHOOT_DELAY,
+            is_fake: true,
+            rank: 0,
+        };
+
         let speed = rand(1.0, MAX_SPHERE_SPEED * 0.5);
         let dirx = rand(0.0, 1.0);
         let diry = f64::sqrt(1.0 - dirx);
@@ -366,7 +416,19 @@ impl World {
         let color = darken_color(shooter.color, 0.75);
 
         let (_, sphere) = self.spheres.obtain();
-        sphere.set(x, y, vx, vy, r, color, SphereType::BULLET, self.current_uid);
+        sphere.set(
+            x,
+            y,
+            vx,
+            vy,
+            r,
+            color,
+            SphereType::BULLET {
+                shooter_id,
+                is_in_shooter: true,
+            },
+            self.current_uid,
+        );
         sphere.set_shooter(shooter_id);
 
         self.increment_uid();
@@ -375,9 +437,19 @@ impl World {
     pub fn shoot(&mut self, id: usize, x: f64, y: f64) {
         let sphere = self.spheres.get_mut(id);
 
-        if sphere.shoot_delay > 0.0 {
-            return;
-        };
+        match sphere.r#type {
+            SphereType::PLAYER {
+                name: _,
+                shoot_delay,
+                is_fake: _,
+                rank: _,
+            } => {
+                if shoot_delay > 0.0 {
+                    return;
+                }
+            }
+            _ => return,
+        }
 
         sphere.reset_shoot_delay();
 
@@ -390,10 +462,10 @@ impl World {
     }
 
     fn check_collision(&mut self) {
-        let n = self.spheres.alive_ids.len();
+        let n = self.sphere_ids.len();
 
         for i in 0..(n - 1) {
-            let id1 = self.spheres.alive_ids[i];
+            let id1 = self.sphere_ids[i];
             let s1 = &self.spheres.objs[id1];
 
             let other_ids =
@@ -412,14 +484,56 @@ impl World {
                     continue;
                 }
 
-                if s1.shooter_id == Some(id2) || s2.shooter_id == Some(id1) {
-                    continue;
-                }
-
                 let distance_sq = (s2.x - s1.x) * (s2.x - s1.x) + (s2.y - s1.y) * (s2.y - s1.y);
                 let r_total_sq = (s1.r + s2.r) * (s1.r + s2.r);
+                let is_collide = distance_sq <= r_total_sq;
 
-                if distance_sq <= r_total_sq {
+                {
+                    let s1 = &mut self.spheres.objs[id1];
+
+                    if let SphereType::BULLET {
+                        shooter_id,
+                        is_in_shooter,
+                    } = s1.r#type
+                    {
+                        if shooter_id == id2 && is_in_shooter && !is_collide {
+                            s1.r#type = SphereType::BULLET {
+                                shooter_id,
+                                is_in_shooter: false,
+                            };
+                        }
+
+                        if shooter_id == id2 && is_in_shooter {
+                            continue;
+                        }
+                    }
+                }
+
+                {
+                    let s2 = &mut self.spheres.objs[id2];
+
+                    if let SphereType::BULLET {
+                        shooter_id,
+                        is_in_shooter,
+                    } = s2.r#type
+                    {
+                        if shooter_id == id1 && is_in_shooter && !is_collide {
+                            s2.r#type = SphereType::BULLET {
+                                shooter_id,
+                                is_in_shooter: false,
+                            };
+                        }
+
+                        if shooter_id == id1 && is_in_shooter {
+                            continue;
+                        }
+                    }
+                }
+
+                let s1 = &self.spheres.objs[id1];
+                let s2 = &self.spheres.objs[id2];
+
+                if is_collide {
                     let (r1, r2) = World::handle_collision(s1, s2, distance_sq);
 
                     {
@@ -451,14 +565,41 @@ impl World {
         }
 
         if s1.r#type == SphereType::AM || s2.r#type == SphereType::AM {
-            Sphere::melt(s1, s2, bigger, distance_sq)
-        } else if (bigger.r#type == SphereType::FOOD || bigger.r#type == SphereType::BULLET)
-            && smaller.r#type != SphereType::FOOD
-            && smaller.r#type != SphereType::BULLET
-        {
-            Sphere::absorb(s1, s2, smaller, distance_sq)
-        } else {
-            Sphere::absorb(s1, s2, bigger, distance_sq)
+            return Sphere::melt(s1, s2, bigger, distance_sq);
         }
+
+        if let SphereType::BULLET {
+            shooter_id: _a,
+            is_in_shooter: _b,
+        } = bigger.r#type
+        {
+            if let SphereType::BULLET {
+                shooter_id: _c,
+                is_in_shooter: _d,
+            } = smaller.r#type
+            {
+                return Sphere::absorb(s1, s2, bigger, distance_sq);
+            }
+
+            if smaller.r#type != SphereType::FOOD {
+                return Sphere::absorb(s1, s2, smaller, distance_sq);
+            } else {
+                return Sphere::absorb(s1, s2, bigger, distance_sq);
+            }
+        }
+
+        if bigger.r#type == SphereType::FOOD && smaller.r#type != SphereType::FOOD {
+            if let SphereType::BULLET {
+                shooter_id: _c,
+                is_in_shooter: _d,
+            } = smaller.r#type
+            {
+                return Sphere::absorb(s1, s2, bigger, distance_sq);
+            }
+
+            return Sphere::absorb(s1, s2, smaller, distance_sq);
+        }
+
+        return Sphere::absorb(s1, s2, bigger, distance_sq);
     }
 }

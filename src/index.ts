@@ -28,7 +28,6 @@ const playButton = document.getElementById("play-button") as HTMLButtonElement;
 const nameInput = document.getElementById("name-input") as HTMLInputElement;
 const hsButton = document.getElementById("hs-button") as HTMLButtonElement;
 
-let memory: WebAssembly.Memory;
 let ubur: Ubur;
 let playerId: number | undefined = undefined;
 let playerUid: number | undefined = undefined;
@@ -173,9 +172,8 @@ function draw() {
   drawBackground();
 
   const ar = getAspectRatio();
-  const ptr = ubur.get_visible_sphere_ids(ar, viewX, viewY, viewArea);
-  const len = new Uint32Array(memory.buffer, ptr, 1)[0];
-  const ids = new Uint32Array(memory.buffer, ptr + 4, len);
+  const ids = ubur.get_visible_sphere_ids(ar, viewX, viewY, viewArea);
+  const len = ids.length;
 
   for (let i = 0; i < len; i++) {
     if (ids[i] === playerId) {
@@ -188,7 +186,7 @@ function draw() {
     const color = ubur.get_sphere_color(ids[i]);
     const name = ubur.get_sphere_name(ids[i]);
 
-    if (name) {
+    if (name != undefined) {
       drawName(x, y, r, FAKE_PLAYER_NAMES[name]);
     }
 
@@ -210,9 +208,8 @@ function draw() {
 
   if (!showHighscore) return;
 
-  const hsptr = ubur.get_top_5_player_ids();
-  const hslen = new Uint32Array(memory.buffer, hsptr, 1)[0];
-  const hsids = new Uint32Array(memory.buffer, hsptr + 4, hslen);
+  const hsids = ubur.get_top_5_player_ids();
+  const hslen = hsids.length;
 
   for (let i = 0; i < hslen; i++) {
     const id = hsids[i];
@@ -272,9 +269,7 @@ async function main() {
     resizeUI();
   });
 
-  const wasm = await init();
-  memory = wasm.memory;
-  // console.log(memory.buffer);
+  await init();
 
   const gl = worldCanvas.getContext("webgl");
 

@@ -8,10 +8,18 @@ use crate::constants::{
 #[repr(u8)]
 #[derive(PartialEq, Clone, Copy)]
 pub enum SphereType {
-    PLAYER = 0,
-    FOOD = 1,
-    AM = 2,
-    BULLET = 3,
+    PLAYER {
+        name: usize,
+        shoot_delay: f64,
+        is_fake: bool,
+        rank: usize,
+    },
+    FOOD,
+    AM,
+    BULLET {
+        shooter_id: usize,
+        is_in_shooter: bool,
+    },
 }
 
 #[derive(PartialEq, Clone, Copy)]
@@ -23,8 +31,6 @@ pub struct Sphere {
     pub r: f64,
     pub color: u32,
     pub r#type: SphereType,
-    pub shoot_delay: f64,
-    pub shooter_id: Option<usize>,
 
     // unique id, for now we use usize.
     // I want to use u64, but JS does not support u64, and usize should be sufficient enough
@@ -41,8 +47,6 @@ impl Sphere {
             r,
             color,
             r#type,
-            shoot_delay: 0.0,
-            shooter_id: None,
             uid: 0,
         }
     }
@@ -56,8 +60,6 @@ impl Sphere {
             r: 0.0,
             color: 0,
             r#type: SphereType::FOOD,
-            shoot_delay: 0.0,
-            shooter_id: None,
             uid: 0,
         }
     }
@@ -82,19 +84,59 @@ impl Sphere {
         self.r#type = r#type;
         self.uid = uid;
         self.reset_shoot_delay();
-        self.shooter_id = None;
     }
 
     pub fn set_shooter(&mut self, shooter_id: usize) {
-        self.shooter_id = Some(shooter_id);
+        match self.r#type {
+            SphereType::BULLET {
+                shooter_id: _,
+                is_in_shooter: _,
+            } => {
+                self.r#type = SphereType::BULLET {
+                    shooter_id,
+                    is_in_shooter: true,
+                };
+            }
+            _ => {}
+        }
     }
 
     pub fn reset_shoot_delay(&mut self) {
-        self.shoot_delay = SHOOT_DELAY;
+        match self.r#type {
+            SphereType::PLAYER {
+                name,
+                shoot_delay: _,
+                is_fake,
+                rank,
+            } => {
+                self.r#type = SphereType::PLAYER {
+                    name,
+                    shoot_delay: SHOOT_DELAY,
+                    is_fake,
+                    rank,
+                }
+            }
+            _ => {}
+        }
     }
 
     pub fn update(&mut self, dt: f64) {
-        self.shoot_delay = f64::max(self.shoot_delay - dt, 0.0);
+        match self.r#type {
+            SphereType::PLAYER {
+                name,
+                shoot_delay,
+                is_fake,
+                rank,
+            } => {
+                self.r#type = SphereType::PLAYER {
+                    name,
+                    shoot_delay: f64::max(shoot_delay - dt, 0.0),
+                    is_fake,
+                    rank,
+                }
+            }
+            _ => {}
+        }
 
         self.r -= R_DECREASE_RATIO * self.r * dt;
 
@@ -109,8 +151,6 @@ impl Sphere {
         if left < 0.0 {
             self.x -= left * 2.0;
             self.vx *= -1.0;
-
-            self.shooter_id = None;
         }
 
         if right > WORLD_SIZE {
@@ -118,15 +158,11 @@ impl Sphere {
 
             self.x -= rem * 2.0;
             self.vx *= -1.0;
-
-            self.shooter_id = None;
         }
 
         if top < 0.0 {
             self.y -= top * 2.0;
             self.vy *= -1.0;
-
-            self.shooter_id = None;
         }
 
         if bottom > WORLD_SIZE {
@@ -134,8 +170,6 @@ impl Sphere {
 
             self.y -= rem * 2.0;
             self.vy *= -1.0;
-
-            self.shooter_id = None;
         }
     }
 
