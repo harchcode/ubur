@@ -326,9 +326,9 @@ async function main() {
   hsButton.addEventListener("click", e => {
     showHighscore = !showHighscore;
 
-    if (!playerId) {
-      titleUI.style.display = showHighscore ? "none" : "flex";
-    }
+    // if (!playerId) {
+    //   titleUI.style.display = showHighscore ? "none" : "flex";
+    // }
 
     e.stopPropagation();
     e.preventDefault();

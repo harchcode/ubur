@@ -179,10 +179,10 @@ impl World {
     }
 
     fn check_spawn_collision(&self, x: f64, y: f64, r: f64) -> bool {
-        let n = self.sphere_ids.len();
+        let other_ids = self.qt.get_data_in_region(x - r, y - r, r * 2.0, r * 2.0);
 
-        for i in 0..n {
-            let id = self.sphere_ids[i];
+        for i in 0..other_ids.len() {
+            let id = other_ids[i];
             let s = &self.spheres.objs[id];
 
             let distance_sq = (x - s.x) * (x - s.x) + (y - s.y) * (y - s.y);
