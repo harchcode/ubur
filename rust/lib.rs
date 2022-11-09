@@ -81,13 +81,10 @@ impl Ubur {
     }
 
     pub fn get_sphere_name(&self, id: usize) -> Option<usize> {
-        match self.world.spheres.get(id).r#type {
-            SphereType::PLAYER {
-                name,
-                shoot_delay,
-                is_fake,
-                rank,
-            } => Some(name),
+        let sphere = self.world.spheres.get(id);
+
+        match sphere.r#type {
+            SphereType::PLAYER(name, _) => Some(name),
             _ => None,
         }
     }
@@ -171,16 +168,8 @@ impl Ubur {
     }
 
     pub fn get_sphere_rank(&mut self, id: usize) -> usize {
-        match self.world.spheres.get(id).r#type {
-            SphereType::PLAYER {
-                name: _,
-                shoot_delay: _,
-                is_fake: _,
-                rank,
-            } => rank,
-            _ => 0,
-        }
+        let sphere = self.world.spheres.get(id);
 
-        // return *self.world.player_ranking_map.get(&id).unwrap_or(&0);
+        return sphere.rank;
     }
 }
