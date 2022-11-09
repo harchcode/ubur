@@ -83,10 +83,7 @@ impl Ubur {
     pub fn get_sphere_name(&self, id: usize) -> Option<usize> {
         let sphere = self.world.spheres.get(id);
 
-        match sphere.r#type {
-            SphereType::PLAYER(name, _) => Some(name),
-            _ => None,
-        }
+        return sphere.name;
     }
 
     // pub fn get_sphere_ids(&mut self) -> *const usize {

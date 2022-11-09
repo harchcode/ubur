@@ -131,7 +131,7 @@ impl World {
         for id in self.sphere_ids.iter() {
             let s1 = &self.spheres.objs[*id];
 
-            if !s1.is_player() {
+            if s1.r#type != SphereType::PLAYER {
                 continue;
             }
 
@@ -168,11 +168,9 @@ impl World {
             let sphere = &mut self.spheres.objs[id];
 
             if sphere.r <= 0.0 {
-                if let SphereType::PLAYER(_, is_fake) = sphere.r#type {
-                    if is_fake {
-                        self.respawn_fake_player(id);
-                        continue;
-                    }
+                if sphere.is_fake {
+                    self.respawn_fake_player(id);
+                    continue;
                 }
 
                 self.spheres.free(id);
@@ -210,7 +208,19 @@ impl World {
         let color = rand_color(SPHERE_COLOR_MIN, SPHERE_COLOR_MAX);
 
         let (_, sphere) = self.spheres.obtain();
-        sphere.set(x, y, 0.0, 0.0, r, color, SphereType::FOOD, self.current_uid);
+
+        sphere.set(
+            x,
+            y,
+            0.0,
+            0.0,
+            r,
+            color,
+            SphereType::FOOD,
+            self.current_uid,
+            None,
+            false,
+        );
         self.increment_uid();
     }
 
@@ -224,7 +234,18 @@ impl World {
         }
 
         let (_, sphere) = self.spheres.obtain();
-        sphere.set(x, y, 0.0, 0.0, r, 0, SphereType::AM, self.current_uid);
+        sphere.set(
+            x,
+            y,
+            0.0,
+            0.0,
+            r,
+            0,
+            SphereType::AM,
+            self.current_uid,
+            None,
+            false,
+        );
         self.increment_uid();
     }
 
@@ -260,7 +281,7 @@ impl World {
 
         let (id, sphere) = self.spheres.obtain();
         let uid = self.current_uid;
-        sphere.set(x, y, vx, vy, r, color, SphereType::PLAYER(0, false), uid);
+        sphere.set(x, y, vx, vy, r, color, SphereType::PLAYER, uid, None, false);
 
         self.increment_uid();
 
@@ -305,8 +326,10 @@ impl World {
             vy,
             r,
             color,
-            SphereType::PLAYER(rand_int(0, FAKE_NAME_LEN as i32) as usize, true),
+            SphereType::PLAYER,
             self.current_uid,
+            Some(rand_int(0, FAKE_NAME_LEN as i32) as usize),
+            true,
         );
         self.increment_uid();
 
@@ -349,7 +372,7 @@ impl World {
         prev.vy = diry * speed * sy;
 
         if rand_int(0, 100) >= 90 {
-            prev.r#type = SphereType::PLAYER(rand_int(0, FAKE_NAME_LEN as i32) as usize, true);
+            prev.name = Some(rand_int(0, FAKE_NAME_LEN as i32) as usize);
         }
     }
 
@@ -371,8 +394,10 @@ impl World {
             vy,
             r,
             color,
-            SphereType::BULLET(Some(shooter_id)),
+            SphereType::BULLET,
             self.current_uid,
+            None,
+            false,
         );
         sphere.set_shooter(shooter_id);
 
@@ -419,16 +444,8 @@ impl World {
                     continue;
                 }
 
-                if let SphereType::BULLET(shooter_id) = s1.r#type {
-                    if shooter_id == Some(id2) {
-                        continue;
-                    }
-                }
-
-                if let SphereType::BULLET(shooter_id) = s2.r#type {
-                    if shooter_id == Some(id1) {
-                        continue;
-                    }
+                if s1.shooter_id == Some(id2) || s2.shooter_id == Some(id1) {
+                    continue;
                 }
 
                 let distance_sq = (s2.x - s1.x) * (s2.x - s1.x) + (s2.y - s1.y) * (s2.y - s1.y);
@@ -467,9 +484,9 @@ impl World {
 
         if s1.r#type == SphereType::AM || s2.r#type == SphereType::AM {
             Sphere::melt(s1, s2, bigger, distance_sq)
-        } else if (bigger.r#type == SphereType::FOOD || bigger.is_bullet())
+        } else if (bigger.r#type == SphereType::FOOD || bigger.r#type == SphereType::BULLET)
             && smaller.r#type != SphereType::FOOD
-            && !smaller.is_bullet()
+            && smaller.r#type != SphereType::BULLET
         {
             Sphere::absorb(s1, s2, smaller, distance_sq)
         } else {

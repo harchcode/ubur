@@ -8,10 +8,10 @@ use crate::constants::{
 #[repr(u8)]
 #[derive(PartialEq, Clone, Copy)]
 pub enum SphereType {
-    PLAYER(usize, bool), // (name, is_fake)
-    FOOD,
-    AM,
-    BULLET(Option<usize>), // (shooter_id)
+    PLAYER = 0,
+    FOOD = 1,
+    AM = 2,
+    BULLET = 3,
 }
 
 #[derive(PartialEq, Clone, Copy)]
@@ -23,8 +23,11 @@ pub struct Sphere {
     pub r: f64,
     pub color: u32,
     pub r#type: SphereType,
+    pub shooter_id: Option<usize>,
     pub shoot_delay: f64,
     pub rank: usize,
+    pub is_fake: bool,
+    pub name: Option<usize>,
 
     // unique id, for now we use usize.
     // I want to use u64, but JS does not support u64, and usize should be sufficient enough
@@ -32,7 +35,17 @@ pub struct Sphere {
 }
 
 impl Sphere {
-    pub fn new(x: f64, y: f64, vx: f64, vy: f64, r: f64, color: u32, r#type: SphereType) -> Sphere {
+    pub fn new(
+        x: f64,
+        y: f64,
+        vx: f64,
+        vy: f64,
+        r: f64,
+        color: u32,
+        r#type: SphereType,
+        name: Option<usize>,
+        is_fake: bool,
+    ) -> Sphere {
         Sphere {
             x,
             y,
@@ -44,6 +57,9 @@ impl Sphere {
             shoot_delay: 0.0,
             rank: 0,
             uid: 0,
+            is_fake,
+            name,
+            shooter_id: None,
         }
     }
 
@@ -59,6 +75,9 @@ impl Sphere {
             shoot_delay: 0.0,
             uid: 0,
             rank: 0,
+            is_fake: false,
+            name: None,
+            shooter_id: None,
         }
     }
 
@@ -72,6 +91,8 @@ impl Sphere {
         color: u32,
         r#type: SphereType,
         uid: usize,
+        name: Option<usize>,
+        is_fake: bool,
     ) {
         self.x = x;
         self.y = y;
@@ -82,32 +103,13 @@ impl Sphere {
         self.r#type = r#type;
         self.uid = uid;
         self.reset_shoot_delay();
-    }
-
-    pub fn is_player(&self) -> bool {
-        match self.r#type {
-            SphereType::PLAYER(_, _) => true,
-            _ => false,
-        }
-    }
-
-    pub fn is_bullet(&self) -> bool {
-        match self.r#type {
-            SphereType::BULLET(_) => true,
-            _ => false,
-        }
+        self.name = name;
+        self.is_fake = is_fake;
+        self.shooter_id = None;
     }
 
     pub fn set_shooter(&mut self, shooter_id: usize) {
-        self.r#type = SphereType::BULLET(Some(shooter_id));
-    }
-
-    pub fn reset_shooter(&mut self) {
-        if let SphereType::BULLET(shooter_id) = self.r#type {
-            if shooter_id != None {
-                self.r#type = SphereType::BULLET(None);
-            }
-        }
+        self.shooter_id = Some(shooter_id);
     }
 
     pub fn reset_shoot_delay(&mut self) {
@@ -131,7 +133,7 @@ impl Sphere {
             self.x -= left * 2.0;
             self.vx *= -1.0;
 
-            self.reset_shooter();
+            self.shooter_id = None;
         }
 
         if right > WORLD_SIZE {
@@ -140,14 +142,14 @@ impl Sphere {
             self.x -= rem * 2.0;
             self.vx *= -1.0;
 
-            self.reset_shooter();
+            self.shooter_id = None;
         }
 
         if top < 0.0 {
             self.y -= top * 2.0;
             self.vy *= -1.0;
 
-            self.reset_shooter();
+            self.shooter_id = None;
         }
 
         if bottom > WORLD_SIZE {
@@ -156,7 +158,7 @@ impl Sphere {
             self.y -= rem * 2.0;
             self.vy *= -1.0;
 
-            self.reset_shooter();
+            self.shooter_id = None;
         }
     }
 
