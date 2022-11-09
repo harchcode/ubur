@@ -299,37 +299,40 @@ export function setCircle(isCircle: boolean) {
   gl.uniform1i(circleLocation, isCircle ? 1 : 0);
 }
 
+const nameFonts: string[] = [];
+
+for (let i = 0; i < 400; i++) {
+  nameFonts.push(`${8 + i}px sans-serif`);
+}
+
 export function drawName(x: number, y: number, r: number, name: string) {
-  const _r = Math.max(r, 10.0);
-  const textScale = (_r / 25) * viewScaleVec[0];
-  const oneOverTextScale = 1 / textScale;
-  ctx.setTransform(textScale, 0, 0, textScale, 0, 0);
-  // ctx.scale(textScale, textScale);
-  const ax =
-    ((x - viewX) * viewScaleVec[0] + ctx.canvas.width * 0.5) * oneOverTextScale;
-  const ay =
-    ((y - viewY) * viewScaleVec[1] + ctx.canvas.height * 0.5) *
-    oneOverTextScale;
-  ctx.strokeText(name, ax, ay);
-  ctx.fillText(name, ax, ay);
-  // ctx.scale(oneOverTextScale, oneOverTextScale);
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  const ax = (x - viewX) * viewScaleVec[0] + ctx.canvas.width * 0.5;
+  const ay = (y - viewY) * viewScaleVec[1] + ctx.canvas.height * 0.5;
+
+  const ar = r * viewScaleVec[0];
+  const fontIndex = Math.min(((ar / 1000) * 400) | 0, 399);
+
+  ctx.lineWidth = Math.max(2, (fontIndex * 0.125) | 0);
+  ctx.font = nameFonts[fontIndex];
+
+  ctx.strokeText(name, ax | 0, ay | 0);
+  ctx.fillText(name, ax | 0, ay | 0);
 }
 
 const scoreTextAlign = "left";
 const scoreBaseline = "bottom";
 const scoreText = "Score: ";
-const scoreScale = 2.0;
-const scoreOneOverScale = 1 / scoreScale;
+const scoreFont = "32px sans-serif";
 
 export function drawScore(score: number) {
   const s = score.toString();
 
-  const sx = 16 * scoreOneOverScale;
-  const zx = sx + 56;
-  const y = (ctx.canvas.height - 8) * scoreOneOverScale;
+  const sx = 16;
+  const zx = sx + 108;
+  const y = ctx.canvas.height - 8;
 
-  ctx.setTransform(scoreScale, 0, 0, scoreScale, 0, 0);
+  ctx.font = scoreFont;
+  ctx.lineWidth = 4;
 
   ctx.textAlign = scoreTextAlign;
   ctx.textBaseline = scoreBaseline;
@@ -339,14 +342,11 @@ export function drawScore(score: number) {
 
   ctx.strokeText(s, zx, y);
   ctx.fillText(s, zx, y);
-
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
 }
 
 const hsScoreTextAlign = "right";
 const hsRankTextAlign = "left";
 const hsBaseline = "bottom";
-const hsScales = [1.4, 1.2, 1.2, 1.0, 1.0, 1.0];
 const hsNameOffset = 256;
 const hsRankOffset = hsNameOffset + 40;
 const hsLineHeight = 24;
@@ -373,49 +373,32 @@ export function drawHighscores(
     const score = i === 5 ? playerScore.toString() : highScores[i].toString();
     const name = i === 5 ? playerName : names[i];
 
-    const scale = hsScales[i];
-    const oneOverScale = 1 / scale;
-
-    ctx.setTransform(scale, 0, 0, scale, 0, 0);
-
-    const x = (ctx.canvas.width - 16) * oneOverScale;
-    ay += hsLineHeight * scale;
-    const y = (ay + 48) * oneOverScale;
+    const x = ctx.canvas.width - 16;
+    ay += hsLineHeight;
+    const y = ay + 48;
     // const y = (i * 24 + 48) * oneOverScale;
 
     if (playerRank - 1 === i || i === 5) {
       ctx.fillStyle = hsHighlightColor;
 
-      ctx.fillRect(
-        x - (hsRankOffset + 8) * oneOverScale,
-        y - 20,
-        312 * oneOverScale,
-        24
-      );
+      ctx.fillRect(x - (hsRankOffset + 8), y - 20, 312, 24);
     }
 
     ctx.font = i < 3 ? top3Font : font;
     ctx.fillStyle = hsColors[i];
     ctx.strokeStyle = hsLineColors[i];
-    ctx.lineWidth = 2 * scale;
+    ctx.lineWidth = 2;
 
     ctx.textAlign = hsRankTextAlign;
-    ctx.strokeText(rank, x - hsRankOffset * oneOverScale, y);
-    ctx.fillText(rank, x - hsRankOffset * oneOverScale, y);
+    ctx.strokeText(rank, x - hsRankOffset, y);
+    ctx.fillText(rank, x - hsRankOffset, y);
 
     // ctx.fillRect(x - hsNameOffset * oneOverScale, y, 160 * oneOverScale, 24);
-    ctx.strokeText(
-      name,
-      x - hsNameOffset * oneOverScale,
-      y,
-      160 * oneOverScale
-    );
-    ctx.fillText(name, x - hsNameOffset * oneOverScale, y, 160 * oneOverScale);
+    ctx.strokeText(name, x - hsNameOffset, y, 160);
+    ctx.fillText(name, x - hsNameOffset, y, 160);
 
     ctx.textAlign = hsScoreTextAlign;
     ctx.strokeText(score, x, y);
     ctx.fillText(score, x, y);
-
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
   }
 }
