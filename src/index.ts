@@ -28,6 +28,7 @@ const playButton = document.getElementById("play-button") as HTMLButtonElement;
 const nameInput = document.getElementById("name-input") as HTMLInputElement;
 const hsButton = document.getElementById("hs-button") as HTMLButtonElement;
 
+let memory: WebAssembly.Memory;
 let ubur: Ubur;
 let playerId: number | undefined = undefined;
 let playerUid: number | undefined = undefined;
@@ -172,8 +173,9 @@ function draw() {
   drawBackground();
 
   const ar = getAspectRatio();
-  const ids = ubur.get_visible_sphere_ids(ar, viewX, viewY, viewArea);
-  const len = ids.length;
+  const idsPtr = ubur.get_visible_sphere_ids(ar, viewX, viewY, viewArea);
+  const len = new Uint32Array(memory.buffer, idsPtr, 1)[0];
+  const ids = new Uint32Array(memory.buffer, idsPtr + 4, len);
 
   for (let i = 0; i < len; i++) {
     if (ids[i] === playerId) {
@@ -208,8 +210,9 @@ function draw() {
 
   if (!showHighscore) return;
 
-  const hsids = ubur.get_top_5_player_ids();
-  const hslen = hsids.length;
+  const hsidsPtr = ubur.get_top_5_player_ids();
+  const hslen = new Uint32Array(memory.buffer, hsidsPtr, 1)[0];
+  const hsids = new Uint32Array(memory.buffer, hsidsPtr + 4, hslen);
 
   for (let i = 0; i < hslen; i++) {
     const id = hsids[i];
@@ -269,7 +272,8 @@ async function main() {
     resizeUI();
   });
 
-  await init();
+  const wasm = await init();
+  memory = wasm.memory;
 
   const gl = worldCanvas.getContext("webgl");
 
@@ -296,7 +300,7 @@ async function main() {
 
   viewX = wsp2;
   viewY = wsp2;
-  viewArea = 200000;
+  viewArea = 50000;
 
   setViewSize(viewArea);
   setViewPos(viewX, viewY);

@@ -1,5 +1,3 @@
-use std::cell::Cell;
-
 use crate::constants::{
     MAX_SPHERE_R, MAX_SPHERE_SPEED, R_DECREASE_RATIO, SHOOT_AREA_RATIO, SHOOT_DELAY, SHOOT_FORCE,
     WORLD_SIZE,

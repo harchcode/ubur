@@ -1,6 +1,4 @@
-use std::vec;
-
-use crate::utils::{log, next_power_of_2};
+use crate::utils::next_power_of_2;
 
 pub struct Pool<T> {
     pub objs: Vec<T>,
@@ -45,16 +43,14 @@ impl<T> Pool<T> {
         return &mut self.objs[id];
     }
 
-    pub fn get_alive_ids(&mut self) -> Vec<usize> {
-        let mut r = Vec::with_capacity(self.current_size);
+    pub fn get_alive_ids(&mut self, r: &mut Vec<usize>) {
+        r.clear();
 
         for id in 0..self.objs.len() {
             if self.is_alive[id] {
                 r.push(id);
             }
         }
-
-        return r;
     }
 
     pub fn obtain(&mut self) -> (usize, &mut T) {

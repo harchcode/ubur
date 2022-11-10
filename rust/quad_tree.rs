@@ -1,4 +1,5 @@
-// Custom Quad Tree implementation that only store usize id
+// A custom, incorrect Quad Tree implementation that only store usize id
+// But it works
 #[derive(PartialEq, Clone)]
 pub struct IdNode {
     data: Vec<usize>,
@@ -111,12 +112,10 @@ impl IdQuadTree {
         }
     }
 
-    pub fn get_data_in_region(&self, x: f64, y: f64, w: f64, h: f64) -> Vec<usize> {
-        let mut hs: Vec<usize> = vec![];
+    pub fn get_data_in_region(&self, x: f64, y: f64, w: f64, h: f64, hs: &mut Vec<usize>) {
+        hs.clear();
 
-        IdQuadTree::_get_data_in_region(&self.root, x, y, w, h, &mut hs);
-
-        return hs;
+        IdQuadTree::_get_data_in_region(&self.root, x, y, w, h, hs);
     }
 }
 

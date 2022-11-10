@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use crate::{
     constants::{
         AM_SPAWN_DELAY, AM_SPAWN_R_MAX, AM_SPAWN_R_MIN, BULLET_AREA_RATIO, BULLET_SPEED,
@@ -10,7 +8,7 @@ use crate::{
     pool::Pool,
     quad_tree::IdQuadTree,
     sphere::{Sphere, SphereType},
-    utils::{darken_color, log, rand, rand_color, rand_int},
+    utils::{darken_color, rand, rand_color, rand_int},
 };
 
 pub enum Command {
@@ -25,6 +23,7 @@ pub struct World {
     am_spawn_counter: f64,
     current_uid: usize,
     qt: IdQuadTree,
+    qt_check_ids: Vec<usize>,
     pub highscore_player_ids: Vec<usize>,
 }
 
@@ -39,6 +38,7 @@ impl World {
             current_uid: 0,
             highscore_player_ids: Vec::with_capacity(120),
             qt: IdQuadTree::new(0.0, 0.0, WORLD_SIZE, WORLD_SIZE),
+            qt_check_ids: vec![],
         }
     }
 
@@ -52,7 +52,7 @@ impl World {
         }
 
         for _ in 0..99 {
-            let id = self.spawn_fake_player();
+            self.spawn_fake_player();
         }
     }
 
@@ -107,7 +107,7 @@ impl World {
         // updates
         self.qt.clear();
 
-        self.sphere_ids = self.spheres.get_alive_ids();
+        self.spheres.get_alive_ids(&mut self.sphere_ids);
 
         for id in self.sphere_ids.iter() {
             let sphere = &mut self.spheres.objs[*id];
@@ -178,11 +178,12 @@ impl World {
         }
     }
 
-    fn check_spawn_collision(&self, x: f64, y: f64, r: f64) -> bool {
-        let other_ids = self.qt.get_data_in_region(x - r, y - r, r * 2.0, r * 2.0);
+    fn check_spawn_collision(&mut self, x: f64, y: f64, r: f64) -> bool {
+        self.qt
+            .get_data_in_region(x - r, y - r, r * 2.0, r * 2.0, &mut self.qt_check_ids);
 
-        for i in 0..other_ids.len() {
-            let id = other_ids[i];
+        for i in 0..self.qt_check_ids.len() {
+            let id = self.qt_check_ids[i];
             let s = &self.spheres.objs[id];
 
             let distance_sq = (x - s.x) * (x - s.x) + (y - s.y) * (y - s.y);
@@ -428,13 +429,17 @@ impl World {
             let id1 = self.sphere_ids[i];
             let s1 = &self.spheres.objs[id1];
 
-            let other_ids =
-                self.qt
-                    .get_data_in_region(s1.x - s1.r, s1.y - s1.r, s1.r * 2.0, s1.r * 2.0);
+            self.qt.get_data_in_region(
+                s1.x - s1.r,
+                s1.y - s1.r,
+                s1.r * 2.0,
+                s1.r * 2.0,
+                &mut self.qt_check_ids,
+            );
 
             // log(&format!("{}", other_ids.len()));
 
-            for j in &other_ids {
+            for j in self.qt_check_ids.iter() {
                 let id2 = *j;
 
                 let s1 = &self.spheres.objs[id1];
