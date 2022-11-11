@@ -300,9 +300,12 @@ export function setCircle(isCircle: boolean) {
 }
 
 const nameFonts: string[] = [];
+const nameFontCount = 100;
+const nameFontStep = 400 / nameFontCount;
+const nameLineWidthStep = 100 / (nameFontCount * 2);
 
-for (let i = 0; i < 400; i++) {
-  nameFonts.push(`${8 + i}px sans-serif`);
+for (let i = 0; i < nameFontCount; i++) {
+  nameFonts.push(`${12 + i * nameFontStep}px sans-serif`);
 }
 
 export function drawName(x: number, y: number, r: number, name: string) {
@@ -310,9 +313,9 @@ export function drawName(x: number, y: number, r: number, name: string) {
   const ay = (y - viewY) * viewScaleVec[1] + ctx.canvas.height * 0.5;
 
   const ar = r * viewScaleVec[0];
-  const fontIndex = Math.min(((ar / 1000) * 400) | 0, 399);
+  const fontIndex = Math.min(((ar / 1000) * nameFontCount) | 0, 399);
 
-  ctx.lineWidth = Math.max(2, (fontIndex * 0.125) | 0);
+  ctx.lineWidth = Math.max(2, (fontIndex * nameLineWidthStep) | 0);
   ctx.font = nameFonts[fontIndex];
 
   ctx.strokeText(name, ax | 0, ay | 0);
