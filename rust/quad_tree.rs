@@ -3,7 +3,7 @@
 
 pub struct IdQuad {
     data: Vec<usize>,
-    children: Vec<Box<IdQuad>>,
+    children: Vec<IdQuad>,
     x: f64,
     y: f64,
     w: f64,
@@ -57,10 +57,10 @@ impl IdQuad {
             let bl = IdQuad::new(node.x, node.y + hh, hw, hh);
             let br = IdQuad::new(node.x + hw, node.y + hh, hw, hh);
 
-            node.children.push(Box::new(tl));
-            node.children.push(Box::new(tr));
-            node.children.push(Box::new(bl));
-            node.children.push(Box::new(br));
+            node.children.push(tl);
+            node.children.push(tr);
+            node.children.push(bl);
+            node.children.push(br);
         }
 
         for i in 0..4 {
