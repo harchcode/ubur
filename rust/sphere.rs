@@ -223,4 +223,8 @@ impl Sphere {
             return (smaller_r, bigger_r);
         }
     }
+
+    pub fn get_score(&self) -> usize {
+        f64::trunc(4.0 * self.r * self.r) as usize
+    }
 }

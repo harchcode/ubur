@@ -376,7 +376,6 @@ export function drawHighscores(
     const x = ctx.canvas.width - 16;
     ay += hsLineHeight;
     const y = ay + 48;
-    // const y = (i * 24 + 48) * oneOverScale;
 
     if (playerRank - 1 === i || i === 5) {
       ctx.fillStyle = hsHighlightColor;
@@ -393,7 +392,6 @@ export function drawHighscores(
     ctx.strokeText(rank, x - hsRankOffset, y);
     ctx.fillText(rank, x - hsRankOffset, y);
 
-    // ctx.fillRect(x - hsNameOffset * oneOverScale, y, 160 * oneOverScale, 24);
     ctx.strokeText(name, x - hsNameOffset, y, 160);
     ctx.fillText(name, x - hsNameOffset, y, 160);
 
