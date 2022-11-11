@@ -1,4 +1,4 @@
-import init, { Ubur } from "../pkg/ubur";
+import init, { FrameInfo, PlayerSphereInfo, Ubur } from "../pkg/ubur";
 import {
   beginDraw,
   drawHighscores,
@@ -38,22 +38,37 @@ let viewY: number;
 let viewArea: number;
 let showHighscore = false;
 
+let frameInfo: FrameInfo;
+let playerInfo: PlayerSphereInfo | undefined = undefined;
+
 function update(dt: number) {
   ubur.update(dt);
 
+  frameInfo = ubur.get_frame_info(
+    playerId,
+    playerUid,
+    getAspectRatio(),
+    viewX,
+    viewY,
+    viewArea
+  );
+
+  playerInfo = frameInfo.player_info;
+
   if (!playerId || !playerUid) return;
 
-  viewX = ubur.get_sphere_x(playerId);
-  viewY = ubur.get_sphere_y(playerId);
-  viewArea = ubur.get_sphere_view_area(playerId);
-
   // check is player dead
-  if (ubur.is_player_dead(playerId, playerUid)) {
+  if (!playerInfo) {
     playerId = undefined;
     playerUid = undefined;
 
     titleUI.style.display = "flex";
+    return;
   }
+
+  viewX = playerInfo.x;
+  viewY = playerInfo.y;
+  viewArea = playerInfo.view_area;
 }
 
 const BG_CELLS_PER_ROW = 10;
@@ -143,12 +158,12 @@ function drawBackground() {
 }
 
 function drawPlayer() {
-  if (playerId === undefined) return;
+  if (!playerInfo) return;
 
-  const x = viewX;
-  const y = viewY;
-  const r = ubur.get_sphere_r(playerId);
-  const color = ubur.get_sphere_color(playerId);
+  const x = playerInfo.x;
+  const y = playerInfo.y;
+  const r = playerInfo.r;
+  const color = playerInfo.color;
   const d = r * 2;
 
   setCircle(true);
@@ -202,10 +217,8 @@ function draw() {
   drawPlayer();
 
   // draw scores
-  const playerScore = playerId ? ubur.get_sphere_score(playerId) : 0;
-
-  if (playerId !== undefined) {
-    drawScore(playerScore);
+  if (playerInfo) {
+    drawScore(playerInfo.score);
   }
 
   if (!showHighscore) return;
@@ -234,9 +247,13 @@ function draw() {
     hsNames[i] = emptyName;
   }
 
-  const playerRank = playerId ? ubur.get_sphere_rank(playerId) : 0;
-
-  drawHighscores(hsNames, hsScores, playerName, playerRank, playerScore);
+  drawHighscores(
+    hsNames,
+    hsScores,
+    playerName,
+    playerInfo?.rank || 0,
+    playerInfo?.score || 0
+  );
 }
 
 function handleShoot(ev: MouseEvent) {
