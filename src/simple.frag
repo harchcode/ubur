@@ -4,15 +4,16 @@
 
 precision mediump float;
 
-varying vec4 vPosition;
-uniform vec4 uColor;
-uniform bool uCircle;
+varying vec2 v_position;
+
+uniform vec4 u_color;
+uniform bool u_circle;
 
 void main(void) {
   float alpha = 1.0;
 
-  if (uCircle) {
-    vec2 cxy = 2.0 * vPosition.xy;
+  if (u_circle) {
+    vec2 cxy = 2.0 * v_position;
     float r = dot(cxy, cxy);
 
     #ifdef GL_OES_standard_derivatives
@@ -24,5 +25,5 @@ void main(void) {
     alpha = 1.0 - smoothstep(1.0 - delta, 1.0 + delta, r);
   }
 
-  gl_FragColor = uColor * alpha;
+  gl_FragColor = u_color * alpha;
 }
