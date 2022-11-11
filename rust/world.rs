@@ -6,7 +6,7 @@ use crate::{
         STARTING_PLAYER_R_RANDOMNESS, WORLD_SIZE,
     },
     pool::Pool,
-    quad_tree::IdQuadTree,
+    quad_tree::IdQuad,
     sphere::{Sphere, SphereType},
     utils::{darken_color, rand, rand_color, rand_int},
 };
@@ -22,7 +22,7 @@ pub struct World {
     food_spawn_counter: f64,
     am_spawn_counter: f64,
     current_uid: usize,
-    qt: IdQuadTree,
+    qt: IdQuad,
     qt_check_ids: Vec<usize>,
     pub highscore_player_ids: Vec<usize>,
 }
@@ -37,7 +37,7 @@ impl World {
             am_spawn_counter: 0.0,
             current_uid: 0,
             highscore_player_ids: Vec::with_capacity(120),
-            qt: IdQuadTree::new(0.0, 0.0, WORLD_SIZE, WORLD_SIZE),
+            qt: IdQuad::new(0.0, 0.0, WORLD_SIZE, WORLD_SIZE),
             qt_check_ids: vec![],
         }
     }
